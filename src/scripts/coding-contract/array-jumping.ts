@@ -1,24 +1,38 @@
 import * as gen from "scripts/utils/generator"
 
-export function arrayJumping(arr: number[]): boolean {
-    function recurse(currentSlice: number[]): boolean {
+export function arrayJumping(arr: number[]): number {
+    function recurse(currentSlice: number[], jumps = 0): number {
         // Get first elem of arr
         const head = currentSlice[0]
 
-        // If any are end of array, return true
-        if(head >= currentSlice.length - 1) return true
+        // If we are at the end of array, return jumps
+        if(currentSlice.length == 1) return jumps
+        // If we can't jump from here, return 0
+        if(head == 0) return 0
+        // If we can jump to the end, return jumps + 1
+        if(head >= currentSlice.length - 1) return jumps + 1
 
-        // Else, get all possible nodes that I can jump to based on first elem and recurse
-        for(const len of gen.range(1, head)) {
-            if(recurse(currentSlice.slice(len))) return true
+        // Else, get all possible nodes that I can jump to and recurse
+        let minJump = Infinity
+
+        // Minor optimization.  By trying the largest jump first, then walking backwards,
+        // we have a better shot of finding the end of the array.  This can of course hurt
+        // the performance if the array is left-balanced rather than even/random
+        for(const len of gen.range(head, 0, -1)) {
+            const recursiveJump = recurse(currentSlice.slice(len), jumps + 1)
+            if(recursiveJump < minJump && recursiveJump > 0) minJump = recursiveJump
+            // Minor optimization.  Assumption is that if we have found a jump smaller
+            // than the length we are checking, then we know that we have found something
+            // that can jump past us.  If we can jump past this point, no need to check
+            if(minJump <= len) break
         }
 
-        return false
+        return isFinite(minJump) ? minJump : 0
     }
 
     return recurse(arr)
 }
 
 export async function main(ns: typeof NS) {
-    ns.tprint(arrayJumping([2,9,8,0,3,5,0,0,5,5,2,5]))
+    ns.tprint(arrayJumping([2,4,9,0,3,5,0,0,5,5,2,5]))
 }
