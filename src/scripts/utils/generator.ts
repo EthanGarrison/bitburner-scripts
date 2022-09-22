@@ -10,7 +10,7 @@ function* pure(gen: Iterable<any> | any) { if (isIterable(gen)) yield* gen; else
 function* range(start: number, end: number, step: number = 1) {
     const cmp = (i: number) => {
         if(start <= end && step > 0) return i < end 
-        else if(start > end && step < 0) return i >= end
+        else if(start > end && step < 0) return i > end
         else return false
     }
     for(let i = start; cmp(i); i += step) yield i
