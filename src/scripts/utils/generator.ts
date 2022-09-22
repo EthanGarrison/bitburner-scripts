@@ -77,8 +77,12 @@ const take = <I>(cnt: number) => function* (gen: Iterable<I>) {
  */
 const consume = foreach(identity)
 
+const toArray = <I>(gen: Iterable<I>) => [...gen]
+
+// TODO: Window/Sliding window functions
+
 /**
  * Generator Utils
  * Exposes a bunch of handy methods for working from generators rather than arrays
  */
-export { pure, map, flatMap, filter, foreach, tap, sort, take, range, consume, foldLeft }
+export { pure, map, flatMap, filter, foreach, tap, sort, take, range, consume, foldLeft, toArray }
