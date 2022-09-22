@@ -1,0 +1,11 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "lib": ["ES2022"],
+        "target": "ES2022",
+
+        "outDir": "dist",
+        "rootDir": "./src/",
+        "baseUrl": "./src/"
+    }
+}
