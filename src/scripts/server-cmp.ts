@@ -13,7 +13,7 @@ interface ServerRank {
 
 function serverRank(ns: typeof NS, server: string): ServerRank | null {
 	const serverInfo = ns.getServer(server)
-    if(!serverInfo.hasAdminRights || serverInfo.requiredHackingSkill >= ns.getPlayer().skills.hacking) return null
+    if(!serverInfo.hasAdminRights || serverInfo.requiredHackingSkill > ns.getPlayer().skills.hacking) return null
 
     // Assume a single hack
 	const hackTime = ns.getHackTime(server)
