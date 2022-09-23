@@ -1,4 +1,4 @@
-import * as gen from "scripts/utils/generator"
+import * as gen from "scripts/utils/iterable"
 
 export function arrayJumping(arr: number[]): number {
     function recurse(currentSlice: number[], jumps = 0): number {
@@ -34,5 +34,7 @@ export function arrayJumping(arr: number[]): number {
 }
 
 export async function main(ns: typeof NS) {
-    ns.tprint(arrayJumping([2,4,9,0,3,5,0,0,5,5,2,5]))
+    ns.tprint(arrayJumping([2,4,9,0,3,5,0,0,5,5,2,5])) // 2
+    ns.tprint(arrayJumping([0,6,3,1,6,1,0,7,1,0,10,7,0,5,8,2,7,0])) // 0
+    ns.tprint(arrayJumping([6,3,1,6,1,0,7,1,0,10,7,0,5,8,2,7,0])) // 3
 }

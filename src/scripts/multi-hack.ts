@@ -1,5 +1,5 @@
 import * as typeCheck from "scripts/utils/type"
-import * as gen from "scripts/utils/generator"
+import * as gen from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
 import { genDeepScan, getRootAccess } from "scripts/ns-utils"

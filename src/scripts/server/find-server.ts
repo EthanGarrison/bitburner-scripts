@@ -1,6 +1,6 @@
 import { isDefined } from "scripts/utils/type"
 import { buildServerTree, ServerTree } from "scripts/ns-utils"
-import * as gen from "scripts/utils/generator"
+import * as gen from "scripts/utils/iterable"
 
 function buildPath<T>(tree: ServerTree<T>, target: T): T[] {
     function recurse(current: ServerTree<T>): T[] {

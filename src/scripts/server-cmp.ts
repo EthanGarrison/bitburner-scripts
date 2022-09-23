@@ -1,5 +1,5 @@
 import * as typeCheck from "scripts/utils/type"
-import * as gen from "scripts/utils/generator"
+import * as iter from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
 import { genDeepScan } from "scripts/ns-utils.js"
@@ -40,11 +40,11 @@ function serverRank(ns: typeof NS, server: string): ServerRank | null {
 
 export async function main(ns: typeof NS) {
 	fn.compose(
-		gen.foreach(_ => ns.tprint(_)),
-        gen.take(10),
-		gen.sort((l: ServerRank, r: ServerRank) => r.rank - l.rank),
-		gen.filter(typeCheck.isDefined),
-		gen.map((_: string) => serverRank(ns, _)),
-		gen.filter((server: string) => !(server == "home" || server == "darkweb"))
+		iter.foreach(_ => ns.tprint(_)),
+        iter.take(10),
+		iter.sort((l: ServerRank, r: ServerRank) => r.rank - l.rank),
+		iter.filter(typeCheck.isDefined),
+		iter.map((_: string) => serverRank(ns, _)),
+		iter.filter((server: string) => !(server == "home" || server == "darkweb"))
 	)(genDeepScan(ns, "home"))
 }

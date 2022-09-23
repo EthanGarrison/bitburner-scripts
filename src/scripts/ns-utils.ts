@@ -1,5 +1,5 @@
 import * as fn from "scripts/utils/fn"
-import * as gen from "scripts/utils/generator"
+import * as gen from "scripts/utils/iterable"
 
 interface ServerTree<T> {
     node: T

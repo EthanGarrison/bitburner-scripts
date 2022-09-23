@@ -1,4 +1,4 @@
-import * as gen from "scripts/utils/generator"
+import * as iter from "scripts/utils/iterable"
 
 /**
  * Given allowed cash allowance, attempt to upgrade the given node index,
@@ -27,7 +27,7 @@ function upgradeNode({ print, hacknet }: typeof NS, allowance: number, index: nu
 function getProductionPerSec(ns: typeof NS) {
     const productionMulti = ns.getHacknetMultipliers().production
     let totalProduction = 0
-    for(const nodeId of gen.range(0, ns.hacknet.numNodes())) {
+    for(const nodeId of iter.range(0, ns.hacknet.numNodes())) {
         const nodeStats = ns.hacknet.getNodeStats(nodeId)
         totalProduction += nodeStats.production
     }
@@ -55,7 +55,7 @@ export async function main(ns: typeof NS) {
             }
             else {
                 const nodeCashAllowance = Math.floor((availableCash * 100) / nodeCount) / 100
-                const totalCost = gen.foldLeft(0)((acc: number, nodeId: number) => acc + upgradeNode(ns, nodeCashAllowance, nodeId, 5))(gen.range(0, nodeCount))
+                const totalCost = iter.foldLeft(0)((acc: number, nodeId: number) => acc + upgradeNode(ns, nodeCashAllowance, nodeId, 5))(iter.range(0, nodeCount))
                 availableCash -= totalCost
             }
         }

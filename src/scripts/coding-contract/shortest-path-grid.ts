@@ -1,5 +1,7 @@
-import * as gen from "scripts/utils/generator"
+import * as gen from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
+
+type Point = [number,number]
 
 /**
  * You are given a 2D array of numbers (array of array of numbers) representing
@@ -22,14 +24,13 @@ import * as fn from "scripts/utils/fn"
  *  [1,0]
  * ] -> ""
  */
-
 export function shortestPathGrid(grid: number[][]): string {
     const endX = grid.length - 1
     const endY = grid[0].length - 1
     // Stupid check, make sure the grid is even possible
     if (grid[endX][endY] == 1) return ""
 
-    function recurse(path: number[][]): number[][] {
+    function recurse(path: Point[]): Point[] {
         // console.log(`Testing path [${path.map(p => `[${p.join(",")}]`).join(",")}]`)
         const [recentX, recentY] = path[path.length - 1]
         // If we are at the end, no need for other checks, just return the path
@@ -57,8 +58,8 @@ export function shortestPathGrid(grid: number[][]): string {
         ]
         const parsePaths = fn.compose(
             gen.toArray,
-            gen.sort((l: number[][], r: number[][]) => l.length - r.length),
-            gen.filter((path: number[][]) => path.length > 0),
+            gen.sort((l: Point[], r: Point[]) => l.length - r.length),
+            gen.filter((path: Point[]) => path.length > 0),
             gen.map(recurse)
         )
 
