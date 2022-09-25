@@ -1,7 +1,7 @@
 import * as fn from "scripts/utils/fn"
 import * as gen from "scripts/utils/iterable"
 
-interface ServerTree<T> {
+export interface ServerTree<T> {
     node: T
     leaves: () => ServerTree<T>[]
 }
@@ -9,7 +9,7 @@ interface ServerTree<T> {
 /**
  * Attempts to gain root access through brute-force attempts of each port script
  */
- function getRootAccess(ns: typeof NS, target: string) {
+export function getRootAccess(ns: typeof NS, target: string) {
 	if (ns.hasRootAccess(target)) return true
 	const cracks = [ns.brutessh, ns.relaysmtp, ns.ftpcrack, ns.sqlinject, ns.httpworm, ns.nuke]
 	for (const fn of cracks) {
@@ -19,7 +19,7 @@ interface ServerTree<T> {
 	return ns.hasRootAccess(target)
 }
 
-function buildServerTree(ns: typeof NS, root = "home"): ServerTree<string> {
+export function buildServerTree(ns: typeof NS, root = "home"): ServerTree<string> {
 	const seen = new Set([root])
 	function recurse(current: string) {
 		const children = ns.scan(current)
@@ -39,7 +39,7 @@ function buildServerTree(ns: typeof NS, root = "home"): ServerTree<string> {
 /**
  * Recursively scans every server in the tree, starting at the given root
  */
-function* genDeepScan(ns: typeof NS, root = "home") {
+export function* genDeepScan(ns: typeof NS, root = "home") {
 	const serverSet = new Set([root])
 	yield root
 	function* recurse(current) {
@@ -54,5 +54,3 @@ function* genDeepScan(ns: typeof NS, root = "home") {
 	}
 	yield* recurse(root)
 }
-
-export { getRootAccess, genDeepScan, buildServerTree, ServerTree }
