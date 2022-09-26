@@ -15,20 +15,17 @@ export async function main(ns: typeof NS) {
 	const serverList = genDeepScan(ns, root)
 
 	fn.compose(
-		gen.foreach(({ server, threads }: {server: string, threads: number}) => {
+		gen.foreach(({ server, threads }: { server: string, threads: number }) => {
 			ns.print(`Taking over ${server}`)
 			ns.scp(hackScript, server, root)
 			ns.exec(hackScript, server, threads, `${target}`)
 		}),
-		gen.filter(typeCheck.isDefined),
+		gen.filter(({ threads }) => threads > 0), // Skip if not enough available threads
 		gen.map((server: string) => {
 			if (killRunning) ns.killall(server)
-
 			const serverMem = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
 			const threads = Math.floor(serverMem / ns.getScriptRam(hackScript, root))
-
-			// Skip if not enough available threads
-			return threads <= 0 ? null : { server, threads }
+			return { server, threads }
 		}),
 		gen.filter((server: string) => server != root && getRootAccess(ns, server)),
 		gen.tap(server => { ns.print(`Attempting ${server}`) })
