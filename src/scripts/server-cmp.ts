@@ -35,9 +35,9 @@ function serverRank(ns: typeof NS, server: string): ServerRank | null {
 
     const serverMaxMoney = ns.getServerMaxMoney(server)
     const hackMoney = serverMaxMoney * hackPercent
-    const totalLoopTime = hackTime + totalGrowTime + totalWeakenTime
+    const totalLoopTime = (hackTime + totalGrowTime + totalWeakenTime) / 1000
 
-    return { "name": server, "loopTime": totalLoopTime / 1000, hackMoney, "rank": (hackMoney * 0.5) + (totalLoopTime * 0.8) }
+    return { "name": server, "loopTime": totalLoopTime, hackMoney, "rank": hackMoney / totalLoopTime }
 }
 
 export async function main(ns: typeof NS) {
