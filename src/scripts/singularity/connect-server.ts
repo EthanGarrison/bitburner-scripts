@@ -1,4 +1,4 @@
-import { buildPath, buildServerTree } from "scripts/ns-utils"
+import { buildPath, buildServerTree } from "scripts/utils/ns-utils"
 import * as iter from "scripts/utils/iterable"
 
 export async function main(ns: typeof NS) {

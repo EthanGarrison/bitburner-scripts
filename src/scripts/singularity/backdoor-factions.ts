@@ -1,4 +1,4 @@
-import { buildServerTree, buildPath } from "scripts/ns-utils"
+import { buildServerTree, buildPath } from "scripts/utils/ns-utils"
 import { Server } from "../../../NetscriptDefinitions"
 
 export async function main(ns: typeof NS) {

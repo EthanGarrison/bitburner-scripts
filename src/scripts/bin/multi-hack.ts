@@ -1,15 +1,16 @@
-import * as typeCheck from "scripts/utils/type"
 import * as gen from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
-import { genDeepScan, getRootAccess } from "scripts/ns-utils"
+import { genDeepScan, getRootAccess } from "scripts/utils/ns-utils"
+
+const hackScript = "/scripts/bin/hack.js"
 
 export async function main(ns: typeof NS) {
 	const root = "home"
 	const { target, "overwrite": killRunning, script } = ns.flags([
 		["target", null],
 		["overwrite", false],
-		["script", "/scripts/hack.js"]
+		["script", hackScript]
 	])
 	if(typeof script != "string") throw "Script must be a path!"
 	if(typeof target != "string") throw "Target must be a valid server name!"

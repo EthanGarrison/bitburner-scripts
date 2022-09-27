@@ -1,4 +1,4 @@
-import { genDeepScan } from "scripts/ns-utils"
+import { genDeepScan } from "scripts/utils/ns-utils"
 
 export async function main(ns: typeof NS) {
     for(const server of genDeepScan(ns)) {
