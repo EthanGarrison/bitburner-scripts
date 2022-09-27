@@ -1,5 +1,5 @@
 import * as fn from "scripts/utils/fn"
-import * as gen from "scripts/utils/iterable"
+import * as iter from "scripts/utils/iterable"
 
 export interface ServerTree<T> {
     node: T
@@ -19,21 +19,40 @@ export function getRootAccess(ns: typeof NS, target: string) {
 	return ns.hasRootAccess(target)
 }
 
-export function buildServerTree(ns: typeof NS, root = "home"): ServerTree<string> {
-	const seen = new Set([root])
+export function buildServerTree(ns: typeof NS, root?: string): ServerTree<string> {
+	const rootServer = root ? root : ns.getServer().hostname
+	const seen = new Set([rootServer])
 	function recurse(current: string) {
 		const children = ns.scan(current)
 		const genLeaves: (children: string[]) => ServerTree<string>[] = fn.compose(
-			gen.map((child: string) => recurse(child)),
-			gen.filter((child: string) => {
+			iter.toArray,
+			iter.map((child: string) => recurse(child)),
+			iter.filter((child: string) => {
 				const notSeen = !seen.has(child)
 				if(notSeen) seen.add(child)
 				return notSeen
 			})
 		)
-		return { "node": current, leaves: () => genLeaves(children) }
+
+		return { "node": current, leaves() { return genLeaves(children) } }
 	}
-	return recurse(root)
+	return recurse(rootServer)
+}
+
+export function buildPath<T>(tree: ServerTree<T>, target: T): T[] {
+    function recurse(current: ServerTree<T>): T[] {
+        if(current.node == target) return [current.node]
+        else {
+            for(const child of current.leaves()) {
+                if(child.node == target) return [child.node]
+                const possiblePath = recurse(child)
+                if(possiblePath.length > 0) return [child.node, ...possiblePath]
+            }
+            return []
+        }
+    }
+
+    return recurse(tree)
 }
 
 /**

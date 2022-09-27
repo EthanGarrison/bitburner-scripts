@@ -1,22 +1,6 @@
 import { isDefined } from "scripts/utils/type"
-import { buildServerTree, ServerTree } from "scripts/ns-utils"
-import * as gen from "scripts/utils/iterable"
-
-function buildPath<T>(tree: ServerTree<T>, target: T): T[] {
-    function recurse(current: ServerTree<T>): T[] {
-        if(current.node == target) return [current.node]
-        else {
-            for(const child of current.leaves()) {
-                if(child.node == target) return [child.node]
-                const possiblePath = recurse(child)
-                if(possiblePath.length > 0) return [child.node, ...possiblePath]
-            }
-            return []
-        }
-    }
-
-    return recurse(tree)
-}
+import { buildServerTree, buildPath } from "scripts/ns-utils"
+import * as iter from "scripts/utils/iterable"
 
 export async function main(ns: typeof NS) {
     const [target] = ns.args
@@ -25,6 +9,6 @@ export async function main(ns: typeof NS) {
 
     const serverTree = buildServerTree(ns)
     const pathToTarget = buildPath(serverTree, `${target}`)
-    const connectStr = gen.foldLeft("")((acc, server) => acc + `connect ${server};`)(pathToTarget)
+    const connectStr = iter.foldLeft("")((acc, server) => acc + `connect ${server};`)(pathToTarget)
     ns.tprint(connectStr)
 }
