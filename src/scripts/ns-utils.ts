@@ -19,9 +19,8 @@ export function getRootAccess(ns: typeof NS, target: string) {
 	return ns.hasRootAccess(target)
 }
 
-export function buildServerTree(ns: typeof NS, root?: string): ServerTree<string> {
-	const rootServer = root ? root : ns.getServer().hostname
-	const seen = new Set([rootServer])
+export function buildServerTree(ns: typeof NS, root: string): ServerTree<string> {
+	const seen = new Set([root])
 	function recurse(current: string) {
 		const children = ns.scan(current)
 		const genLeaves: (children: string[]) => ServerTree<string>[] = fn.compose(
@@ -36,14 +35,17 @@ export function buildServerTree(ns: typeof NS, root?: string): ServerTree<string
 
 		return { "node": current, leaves() { return genLeaves(children) } }
 	}
-	return recurse(rootServer)
+	return recurse(root)
 }
 
 export function buildPath<T>(tree: ServerTree<T>, target: T): T[] {
+	const seen = new Set([tree.node])
     function recurse(current: ServerTree<T>): T[] {
         if(current.node == target) return [current.node]
         else {
             for(const child of current.leaves()) {
+				if(seen.has(child.node)) continue
+				seen.add(child.node)
                 if(child.node == target) return [child.node]
                 const possiblePath = recurse(child)
                 if(possiblePath.length > 0) return [child.node, ...possiblePath]

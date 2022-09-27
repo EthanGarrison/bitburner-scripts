@@ -7,7 +7,7 @@ export async function main(ns: typeof NS) {
 
     if(!isDefined(target)) throw "No target was given!"
 
-    const serverTree = buildServerTree(ns)
+    const serverTree = buildServerTree(ns, "home")
     const pathToTarget = buildPath(serverTree, `${target}`)
     const connectStr = iter.foldLeft("")((acc, server) => acc + `connect ${server};`)(pathToTarget)
     ns.tprint(connectStr)

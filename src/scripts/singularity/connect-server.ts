@@ -6,7 +6,7 @@ export async function main(ns: typeof NS) {
 
     if(typeof target != "string") throw "No target was given!"
 
-    const serverTree = buildServerTree(ns)
+    const serverTree = buildServerTree(ns, "home")
     const pathToTarget = buildPath(serverTree, target)
     iter.foreach(ns.singularity.connect)(pathToTarget)
 }
