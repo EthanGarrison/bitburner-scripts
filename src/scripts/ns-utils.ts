@@ -63,7 +63,7 @@ export function buildPath<T>(tree: ServerTree<T>, target: T): T[] {
 export function* genDeepScan(ns: typeof NS, root = "home") {
 	const serverSet = new Set([root])
 	yield root
-	function* recurse(current) {
+	function* recurse(current: string): Generator<string, void, void> {
 		const found = ns.scan(current)
 		for (const server of found) {
 			if (serverSet.has(server)) continue;

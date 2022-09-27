@@ -11,6 +11,11 @@ interface ServerRank {
     rank: number
 }
 
+const HACK_SECURITY_DELTA = 0.002
+const GROW_SECURITY_DELTA = 0.004
+const WEAKEN_SECURITY_DELTA = 0.05
+const MIN_WEAKEN_CYCLE = ((HACK_SECURITY_DELTA + GROW_SECURITY_DELTA) / WEAKEN_SECURITY_DELTA)
+
 function serverRank(ns: typeof NS, server: string): ServerRank | null {
     const hackFormulas = ns.formulas.hacking
     const serverInfo = ns.getServer(server)
@@ -23,30 +28,31 @@ function serverRank(ns: typeof NS, server: string): ServerRank | null {
     // Calc time until grow recovers
     const minGrowTime = hackFormulas.growTime(serverInfo, playerInfo)
     const hackPercent = hackFormulas.hackPercent(serverInfo, playerInfo)
-    const growCount = ns.growthAnalyze(server, 1 + hackPercent)
+    const growPercent = hackFormulas.growPercent(serverInfo, 1, playerInfo, 1)
+    const growCount = hackPercent / (growPercent - 1)
     const totalGrowTime = minGrowTime * growCount
 
     // Calc security cost
     const weakenTime = hackFormulas.weakenTime(serverInfo, playerInfo)
-    const hackSecurity = ns.hackAnalyzeSecurity(1, server)
-    const growSecurity = ns.growthAnalyzeSecurity(1, server, 1)
-    const weakenAmount = ns.weakenAnalyze(1)
-    const totalWeakenTime = weakenTime * ((hackSecurity + growSecurity) / weakenAmount)
+    const totalWeakenTime = weakenTime * MIN_WEAKEN_CYCLE
 
-    const serverMaxMoney = ns.getServerMaxMoney(server)
-    const hackMoney = serverMaxMoney * hackPercent
+    const hackMoney = serverInfo.moneyMax * hackPercent
     const totalLoopTime = (hackTime + totalGrowTime + totalWeakenTime) / 1000
 
     return { "name": server, "loopTime": totalLoopTime, hackMoney, "rank": hackMoney / totalLoopTime }
 }
 
-export async function main(ns: typeof NS) {
-    fn.compose(
+export function getProfitableServers(ns: typeof NS, count: number = 10): ServerRank[] {
+    return fn.compose(
         iter.foreach(_ => ns.tprint(_)),
-        iter.take(10),
+        iter.take(count),
         iter.sort((l: ServerRank, r: ServerRank) => r.rank - l.rank),
         iter.filter(typeCheck.isDefined),
         iter.map((_: string) => serverRank(ns, _)),
         iter.filter((server: string) => !(server == "home" || server == "darkweb"))
     )(genDeepScan(ns, "home"))
+}
+
+export async function main(ns: typeof NS) {
+    getProfitableServers(ns)
 }
