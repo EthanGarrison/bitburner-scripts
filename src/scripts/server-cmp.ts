@@ -12,20 +12,22 @@ interface ServerRank {
 }
 
 function serverRank(ns: typeof NS, server: string): ServerRank | null {
+    const hackFormulas = ns.formulas.hacking
     const serverInfo = ns.getServer(server)
-    if (!serverInfo.hasAdminRights || serverInfo.requiredHackingSkill > ns.getPlayer().skills.hacking) return null
+    const playerInfo = ns.getPlayer()
+    if (!serverInfo.hasAdminRights || serverInfo.requiredHackingSkill > playerInfo.skills.hacking) return null
 
     // Assume a single hack
-    const hackTime = ns.getHackTime(server)
+    const hackTime = hackFormulas.hackTime(serverInfo, playerInfo)
 
     // Calc time until grow recovers
-    const minGrowTime = ns.getGrowTime(server)
-    const hackPercent = ns.hackAnalyze(server)
+    const minGrowTime = hackFormulas.growTime(serverInfo, playerInfo)
+    const hackPercent = hackFormulas.hackPercent(serverInfo, playerInfo)
     const growCount = ns.growthAnalyze(server, 1 + hackPercent)
     const totalGrowTime = minGrowTime * growCount
 
     // Calc security cost
-    const weakenTime = ns.getWeakenTime(server)
+    const weakenTime = hackFormulas.weakenTime(serverInfo, playerInfo)
     const hackSecurity = ns.hackAnalyzeSecurity(1, server)
     const growSecurity = ns.growthAnalyzeSecurity(1, server, 1)
     const weakenAmount = ns.weakenAnalyze(1)
