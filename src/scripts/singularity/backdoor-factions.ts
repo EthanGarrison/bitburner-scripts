@@ -13,16 +13,15 @@ export async function main(ns: typeof NS) {
         {server: "run4theh111z", faction: "BitRunners"},
         {server: home, faction: ""}
     ]
-    let currentServer: Server // Where we are currently
+    let currentServer: Server = ns.getServer(home) // Where we are currently
     for(const {server,faction} of factionServers) {
-        currentServer = ns.getServer()
         const serverInfo = ns.getServer(server) // Where we are heading
         if(serverInfo.backdoorInstalled && server != home) {
             ns.tprint(`Skipping ${server}, backdoor already installed`)
             continue
         }
-        if(!(serverInfo.hasAdminRights && serverInfo.hackDifficulty <= player.skills.hacking)) {
-            ns.tprint(`Skipping ${server}, no root access, or not enough hack levels (required ${serverInfo.hackDifficulty})`)
+        if(!(serverInfo.hasAdminRights && serverInfo.requiredHackingSkill <= player.skills.hacking)) {
+            ns.tprint(`Skipping ${server}, no root access, or not enough hack levels (required ${serverInfo.requiredHackingSkill})`)
             continue
         }
 
@@ -36,11 +35,13 @@ export async function main(ns: typeof NS) {
             }
         }
 
+        // Update our currentServer info with the server we just arrived at
+        currentServer = serverInfo
         if(server != home) {
             ns.tprint("Installing backdoor...")
             await singularity.installBackdoor()
             ns.tprint("Backdoor installed, attempting to join faction...")
-            while(!singularity.joinFaction(faction)) await ns.sleep(1000)
+            while(!(player.factions.includes(faction) || singularity.joinFaction(faction))) await ns.sleep(1000)
             ns.tprint("Faction joined!")
         }
         else ns.tprint("Arrived back at home!")
