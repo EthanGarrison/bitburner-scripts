@@ -1,3 +1,5 @@
+import { NS } from "NetscriptDefinitions"
+
 import * as iter from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
@@ -5,7 +7,7 @@ import { genDeepScan } from "scripts/utils/ns-utils"
 
 const hackScript = "/scripts/bin/hack.js"
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
     // Disabling logging, as it is very noisy in scripts like this
     ns.disableLog("scan")
     // ns.disableLog("getServerMaxRam")

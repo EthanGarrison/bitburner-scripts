@@ -1,8 +1,9 @@
+import { NS } from "NetscriptDefinitions"
 import * as iter from "scripts/utils/iterable"
 
 const serverPrefix = "eg-server-"
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
 
     const config = ns.flags([
         ["ram", -1],

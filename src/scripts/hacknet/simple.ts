@@ -1,10 +1,11 @@
+import { NS } from "NetscriptDefinitions"
 import * as iter from "scripts/utils/iterable"
 
 /**
  * Given allowed cash allowance, attempt to upgrade the given node index,
  * prioritizing cheapest upgrade
  */
-function upgradeNode({ print, hacknet }: typeof NS, allowance: number, index: number, upgradeIncrement = 1) {
+function upgradeNode({ print, hacknet }: NS, allowance: number, index: number, upgradeIncrement = 1) {
     const upgradeCommands = [
         // {"name": "cache", "cost": hacknet.getCacheUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCache(index, upgradeIncrement)},
         {"name": "core", "cost": hacknet.getCoreUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCore(index, upgradeIncrement)},
@@ -24,11 +25,11 @@ function upgradeNode({ print, hacknet }: typeof NS, allowance: number, index: nu
 /**
  * Get Hacknet production/s.  Not necessarily accurate
  */
-function getProductionPerSec(ns: typeof NS) {
+function getProductionPerSec(ns: NS) {
     return iter.foldLeft(0)((acc, idx: number) => acc + ns.hacknet.getNodeStats(idx).production)(iter.range(0, ns.hacknet.numNodes()))
 }
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
     const hacknet = ns.hacknet
     const sleepTimer = 1 * 60 * 1000
 

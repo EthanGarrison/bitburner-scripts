@@ -1,3 +1,5 @@
+import { NS } from "NetscriptDefinitions"
+
 import * as iter from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
@@ -5,7 +7,7 @@ import { genDeepScan, getRootAccess } from "scripts/utils/ns-utils"
 
 const hackScript = "/scripts/bin/hack.js"
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
     const root = "home"
     const { target, "overwrite": killRunning, script } = ns.flags([
         ["target", null],

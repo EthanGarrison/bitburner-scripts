@@ -1,8 +1,8 @@
-import { Player, Server } from "../../../NetscriptDefinitions"
+import { NS, Player, Server } from "NetscriptDefinitions"
 import { buildServerTree, buildPath } from "scripts/utils/ns-utils"
 import { home } from "scripts/utils/constants"
 
-export function connectToServer(ns: typeof NS, src: string, dest: string) {
+export function connectToServer(ns: NS, src: string, dest: string) {
     const serverTree = buildServerTree(ns, src)
     const path = buildPath(serverTree, dest)
     ns.tprint(`Attempting to connect to ${dest} from ${src} through path ${path.join(",")}`)
@@ -15,7 +15,7 @@ export function connectToServer(ns: typeof NS, src: string, dest: string) {
     return true
 }
 
-export async function autoInstallBackdoor(ns: typeof NS, server: Server, player: Player, faction?: string) {
+export async function autoInstallBackdoor(ns: NS, server: Server, player: Player, faction?: string) {
     const currentServerName = ns.singularity.getCurrentServer()
     if (server.backdoorInstalled || server.hostname == home) {
         ns.tprint(`Skipping ${server.hostname}, backdoor already installed`)

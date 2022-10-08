@@ -1,3 +1,4 @@
+import { NS } from "NetscriptDefinitions"
 import * as gen from "scripts/utils/iterable"
 
 export function arrayJumping(arr: number[]): number {
@@ -33,7 +34,7 @@ export function arrayJumping(arr: number[]): number {
     return recurse(arr)
 }
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
     ns.tprint(arrayJumping([2,4,9,0,3,5,0,0,5,5,2,5])) // 2
     ns.tprint(arrayJumping([0,6,3,1,6,1,0,7,1,0,10,7,0,5,8,2,7,0])) // 0
     ns.tprint(arrayJumping([6,3,1,6,1,0,7,1,0,10,7,0,5,8,2,7,0])) // 3

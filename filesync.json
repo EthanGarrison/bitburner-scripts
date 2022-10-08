@@ -7,6 +7,6 @@
     "dry": false,
     "definitionFile": {
         "update": true,
-        "location": "NetscriptDefinitions.d.ts"
+        "location": "src/NetscriptDefinitions.d.ts"
     }
 }

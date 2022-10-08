@@ -1,3 +1,5 @@
+import { NS } from "NetscriptDefinitions"
+
 import * as gen from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
@@ -83,6 +85,6 @@ export function shortestPathGrid(grid: number[][]): string {
     return convertToDirection(finalPath).result
 }
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
     ns.tprint(shortestPathGrid([[0, 1, 0, 0, 0], [0, 0, 0, 1, 0]]))
 }

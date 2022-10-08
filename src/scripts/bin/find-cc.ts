@@ -1,6 +1,7 @@
+import { NS } from "NetscriptDefinitions"
 import { genDeepScan } from "scripts/utils/ns-utils"
 
-export async function main(ns: typeof NS) {
+export async function main(ns: NS) {
     for(const server of genDeepScan(ns)) {
         const ccFiles = ns.ls(server, ".cct")
         if(ccFiles.length > 0) {
