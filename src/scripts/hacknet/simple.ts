@@ -6,7 +6,7 @@ import * as iter from "scripts/utils/iterable"
  */
 function upgradeNode({ print, hacknet }: typeof NS, allowance: number, index: number, upgradeIncrement = 1) {
     const upgradeCommands = [
-        {"name": "cache", "cost": hacknet.getCacheUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCache(index, upgradeIncrement)},
+        // {"name": "cache", "cost": hacknet.getCacheUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCache(index, upgradeIncrement)},
         {"name": "core", "cost": hacknet.getCoreUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCore(index, upgradeIncrement)},
         {"name": "level", "cost": hacknet.getLevelUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeLevel(index, upgradeIncrement)},
         {"name": "ram", "cost": hacknet.getRamUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeRam(index, upgradeIncrement)}
@@ -25,20 +25,14 @@ function upgradeNode({ print, hacknet }: typeof NS, allowance: number, index: nu
  * Get Hacknet production/s.  Not necessarily accurate
  */
 function getProductionPerSec(ns: typeof NS) {
-    const productionMulti = ns.getHacknetMultipliers().production
-    let totalProduction = 0
-    for(const nodeId of iter.range(0, ns.hacknet.numNodes())) {
-        const nodeStats = ns.hacknet.getNodeStats(nodeId)
-        totalProduction += nodeStats.production
-    }
-    return totalProduction * productionMulti
+    return iter.foldLeft(0)((acc, idx: number) => acc + ns.hacknet.getNodeStats(idx).production)(iter.range(0, ns.hacknet.numNodes()))
 }
 
 export async function main(ns: typeof NS) {
     const hacknet = ns.hacknet
     const sleepTimer = 1 * 60 * 1000
 
-    let availableCash = ns.getPlayer().money * .1
+    let availableCash = ns.formulas.hacknetNodes.constants().BaseCost
     while(true) {
         const loopStart = new Date().getTime()
         if(availableCash >= ns.getPlayer().money * .2) {
@@ -62,7 +56,8 @@ export async function main(ns: typeof NS) {
         const productionGenerated = getProductionPerSec(ns)
         await ns.sleep(sleepTimer)
         const loopEnd = new Date().getTime()
-        availableCash += productionGenerated * (loopEnd - loopStart) / 1000
+        // Skim 25% of production from hacknodes to keep as profit
+        availableCash += (productionGenerated * ((loopEnd - loopStart) / 1000)) * 0.75
         if(availableCash > ns.getPlayer().money * .2) {
             ns.print(`Internal allocated cash ${availableCash} is more than actually available, resetting to 0`)
             availableCash = 0

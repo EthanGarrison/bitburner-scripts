@@ -30,6 +30,7 @@ function serverRank(ns: typeof NS, server: string): ServerRank {
     // By not doing this, servers that have been worked on previously are weighted favorably
     const serverInfo = ns.getServer(server)
     serverInfo.hackDifficulty = serverInfo.minDifficulty
+    serverInfo.moneyAvailable = serverInfo.moneyMax
 
     const playerInfo = ns.getPlayer()
     if (!serverInfo.hasAdminRights || serverInfo.requiredHackingSkill > playerInfo.skills.hacking)

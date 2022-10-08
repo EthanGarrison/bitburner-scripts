@@ -14,6 +14,8 @@ export async function main(ns: typeof NS) {
     const upgrade: boolean = typeof config.upgrade == "boolean" ? config.upgrade : false
 
     const initialServerCount = upgrade ? 0 : ns.getPurchasedServers().length
+    const totalCost = ns.getPurchasedServerCost(ram) * (count - initialServerCount)
+    if(ns.getPlayer().money <= totalCost) throw `Unable to purchase the servers requested, not enough funds! (${totalCost} required)`
     for (const i of iter.range(initialServerCount, count)) {
         const serverName = serverPrefix + i
         // If we should delete for the upgrade and it fails, we should skip the server
@@ -25,7 +27,12 @@ export async function main(ns: typeof NS) {
                 continue
             }
         }
-        ns.purchaseServer(serverName, ram)
-        ns.toast(`Bought server ${serverName}`)
+        if(ns.purchaseServer(serverName, ram)) {
+            ns.toast(`Bought server ${serverName}`)
+        }
+        else {
+            ns.toast("Failed to buy server!")
+            break
+        }
     }
 }
