@@ -1,0 +1,18 @@
+{
+  "name": "bitburner-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "transpile": "npx tsc -w",
+    "watch": "npx bitburner-filesync@latest"
+  },
+  "author": "Ethan Garrison",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
+    "bitburner-filesync": "^1.1.5",
+    "eslint": "^8.22.0",
+    "typescript": "^4.7.4"
+  }
+}
