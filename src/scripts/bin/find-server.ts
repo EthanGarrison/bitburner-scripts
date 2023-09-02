@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import { isDefined } from "scripts/utils/type"
 import { buildServerTree, buildPath } from "scripts/utils/ns-utils"
 import * as iter from "scripts/utils/iterable"

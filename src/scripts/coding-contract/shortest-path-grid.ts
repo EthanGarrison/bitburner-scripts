@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 
 import * as gen from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
@@ -72,7 +72,7 @@ export function shortestPathGrid(grid: number[][]): string {
     const finalPath = recurse([[0, 0]])
     if (finalPath.length == 0) return ""
 
-    const convertToDirection = gen.foldLeft({ result: "", prev: [0, 0] })(({ result, prev }, [nodeX, nodeY]) => {
+    const convertToDirection = gen.foldLeft<any, any>({ result: "", prev: [0, 0] })(({ result, prev }, [nodeX, nodeY]) => {
         const [prevX, prevY] = prev
         let dir = ""
         if (nodeX > prevX) dir = "D"

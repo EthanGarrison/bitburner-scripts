@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import * as iter from "scripts/utils/iterable"
 
 /**
@@ -26,7 +26,7 @@ function upgradeNode({ print, hacknet }: NS, allowance: number, index: number, u
  * Get Hacknet production/s.  Not necessarily accurate
  */
 function getProductionPerSec(ns: NS) {
-    return iter.foldLeft(0)((acc, idx: number) => acc + ns.hacknet.getNodeStats(idx).production)(iter.range(0, ns.hacknet.numNodes()))
+    return iter.foldLeft<number, number>(0)((acc, idx: number) => acc + ns.hacknet.getNodeStats(idx).production)(iter.range(0, ns.hacknet.numNodes()))
 }
 
 export async function main(ns: NS) {
@@ -50,7 +50,7 @@ export async function main(ns: NS) {
             }
             else {
                 const nodeCashAllowance = Math.floor((availableCash * 100) / nodeCount) / 100
-                const totalCost = iter.foldLeft(0)((acc: number, nodeId: number) => acc + upgradeNode(ns, nodeCashAllowance, nodeId, 5))(iter.range(0, nodeCount))
+                const totalCost = iter.foldLeft<number, number>(0)((acc: number, nodeId: number) => acc + upgradeNode(ns, nodeCashAllowance, nodeId, 5))(iter.range(0, nodeCount))
                 availableCash -= totalCost
             }
         }

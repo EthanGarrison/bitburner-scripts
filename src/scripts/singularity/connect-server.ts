@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import { connectToServer } from "scripts/singularity/utils"
 import { home } from "scripts/utils/constants"
 

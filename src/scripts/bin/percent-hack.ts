@@ -1,11 +1,9 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 
 import * as iter from "scripts/utils/iterable"
-import * as fn from "scripts/utils/fn"
 
-import { genDeepScan } from "scripts/utils/ns-utils"
-
-const hackScript = "/scripts/bin/hack.js"
+import { ServerThread, genDeepScan, getServerThreadsAvailable } from "scripts/utils/ns-utils"
+import { simpleHackScript } from "scripts/utils/constants"
 
 export async function main(ns: NS) {
     // Disabling logging, as it is very noisy in scripts like this
@@ -15,9 +13,9 @@ export async function main(ns: NS) {
 
     const root = "home"
     const { target, "overwrite": killRunning, script, percentage } = ns.flags([
-        ["target", null],
+        ["target", false],
         ["overwrite", false],
-        ["script", hackScript],
+        ["script", simpleHackScript],
         ["percentage", 0.10]
     ])
     if(typeof script != "string") throw "Script must be a path!"
@@ -26,29 +24,18 @@ export async function main(ns: NS) {
 
     const serverList = genDeepScan(ns, root)
 
-    const serverThreadList: { server: string, threads: number }[] = fn.compose(
-        iter.toArray,
-        iter.filter(({ threads }) => threads > 0), // Skip if not enough available threads
-        iter.map((server: string) => {
-            if (killRunning) ns.killall(server)
-            const serverMem = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
-            const threads = Math.max(Math.floor(serverMem / ns.getScriptRam(script, root)), 0)
-            return { server, threads }
-        }),
-        iter.filter((server: string) => server != root && ns.hasRootAccess(server) && !ns.isRunning(script, server, target)),
-        iter.tap(server => { ns.print(`Attempting ${server}`) })
-    )(serverList)
+    const serverThreadList = getServerThreadsAvailable(ns, !!killRunning)(iter.toArray(serverList))
 
-    const totalThreads = iter.foldLeft(0)((acc, { threads }) => acc + threads)(serverThreadList)
+    const totalThreads = iter.foldLeft<ServerThread, number>(0)((acc, { thread }) => acc + thread)(serverThreadList)
     ns.tprint(`Total threads available from open servers: ${totalThreads}`)
     // Would be better if we had a sort of State monad, until then will have to parse servers even after fulfilled requested threads
-    iter.foldLeft(Math.floor(totalThreads * percentage))((acc, { server, threads }) => {
-        ns.tprint(`Trying to have ${server} use ${acc} threads, has ${threads} available`)
+    iter.foldLeft<ServerThread, number>(Math.floor(totalThreads * percentage))((acc, { server, thread }) => {
+        ns.tprint(`Trying to have ${server} use ${acc} threads, has ${thread} available`)
         if(acc != 0) {
-            const usedThreads = acc >= threads ? threads : acc
+            const usedThreads = acc >= thread ? thread : acc
             ns.print(`Taking over ${server}`)
             ns.scp(script, server, root)
-            ns.exec(script, server, threads, target)
+            ns.exec(script, server, thread, target)
             return acc - usedThreads
         }
         else return 0

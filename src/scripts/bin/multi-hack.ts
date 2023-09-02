@@ -1,23 +1,21 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 
 import * as iter from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 
-import { genDeepScan, getRootAccess } from "scripts/utils/ns-utils"
-
-const hackScript = "/scripts/bin/hack.js"
+import { ServerThread, genDeepScan, getServerThreadsAvailable } from "scripts/utils/ns-utils"
+import { simpleHackScript } from "scripts/utils/constants"
 
 export async function main(ns: NS) {
     const root = "home"
     const { target, "overwrite": killRunning, script } = ns.flags([
-        ["target", null],
+        ["target", false],
         ["overwrite", false],
-        ["script", hackScript]
+        ["script", simpleHackScript]
     ])
     if(typeof script != "string") throw "Script must be a path!"
     if(typeof target != "string") throw "Target must be a valid server name!"
-
-    const serverList = genDeepScan(ns, root)
+    if(typeof killRunning != "boolean") throw "Overwrite is a flag and does not accept an argument!"
 
     fn.compose(
         iter.foreach(({ server, threads }: { server: string, threads: number }) => {
@@ -25,14 +23,7 @@ export async function main(ns: NS) {
             ns.scp(script, server, root)
             ns.exec(script, server, threads, target)
         }),
-        iter.filter(({ threads }) => threads > 0), // Skip if not enough available threads
-        iter.map((server: string) => {
-            if (killRunning) ns.killall(server)
-            const serverMem = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
-            const threads = Math.floor(serverMem / ns.getScriptRam(script, root))
-            return { server, threads }
-        }),
-        iter.filter((server: string) => server != root && getRootAccess(ns, server)),
-        iter.tap(server => { ns.print(`Attempting ${server}`) })
-    )(serverList)
+        iter.tap(({ server }: ServerThread) => { ns.print(`Attempting ${server}`) }),
+        getServerThreadsAvailable(ns, killRunning, script, target)
+    )(genDeepScan(ns, root))
 }

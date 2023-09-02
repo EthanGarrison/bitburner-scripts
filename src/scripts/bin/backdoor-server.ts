@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import { autoInstallBackdoor } from "scripts/singularity/utils"
 
 export async function main(ns: NS) {

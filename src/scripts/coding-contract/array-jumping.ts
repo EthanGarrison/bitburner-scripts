@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import * as gen from "scripts/utils/iterable"
 
 export function arrayJumping(arr: number[]): number {
@@ -40,4 +40,6 @@ export async function main(ns: NS) {
     ns.tprint(arrayJumping([6,3,1,6,1,0,7,1,0,10,7,0,5,8,2,7,0])) // 3
     ns.tprint(arrayJumping([1,9,6,0,0,1,3,6])) // 2
     ns.tprint(arrayJumping([2,5,1,2,4,3,3,3,2,4,3,2,5,3,1,2,0,4,2,6,1,4,7,6])) // 7
+    ns.tprint(arrayJumping([1,0,4,0,6,3,2,4,2,4,6,3,2,3,3,6,1])) // 0
+    
 }

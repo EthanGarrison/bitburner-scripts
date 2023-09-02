@@ -1,3 +1,5 @@
+import { NS } from "@ns"
+
 /**
  * Infiltration automation script
  * Stolen shamelessly from https://pastebin.com/7DuFYDpJ
@@ -44,11 +46,11 @@ const doc: Document & { _addEventListener?: any, _removeEventListener?: any, eve
 const infiltrationGames = [
     {
         name: "type it backward",
-        init: function (screen) {
+        init: function (screen: any) {
             const lines = getLines(getEl(screen, "p"));
             state.game.data = lines[0].split("");
         },
-        play: function (screen) {
+        play: function () {
             if (!state.game.data || !state.game.data.length) {
                 delete state.game.data;
                 return;
@@ -59,8 +61,8 @@ const infiltrationGames = [
     },
     {
         name: "enter the code",
-        init: function (screen) { },
-        play: function (screen) {
+        init: function () { },
+        play: function (screen: any) {
             const h4 = getEl(screen, "h4");
             const code = h4[1].textContent;
 
@@ -82,7 +84,7 @@ const infiltrationGames = [
     },
     {
         name: "close the brackets",
-        init: function (screen) {
+        init: function (screen: any) {
             const data = getLines(getEl(screen, "p"));
             const brackets = data.join("").split("");
             state.game.data = [];
@@ -101,7 +103,7 @@ const infiltrationGames = [
                 }
             }
         },
-        play: function (screen) {
+        play: function (screen: any) {
             if (!state.game.data || !state.game.data.length) {
                 delete state.game.data;
                 return;
@@ -112,10 +114,10 @@ const infiltrationGames = [
     },
     {
         name: "slash when his guard is down",
-        init: function (screen) {
+        init: function (screen: any) {
             state.game.data = "wait";
         },
-        play: function (screen) {
+        play: function (screen: any) {
             const data = getLines(getEl(screen, "h4"));
 
             if ("attack" === state.game.data) {
@@ -132,8 +134,8 @@ const infiltrationGames = [
     },
     {
         name: "say something nice about the guard",
-        init: function (screen) { },
-        play: function (screen) {
+        init: function (screen: any) { },
+        play: function (screen: any) {
             const correct = [
                 "affectionate",
                 "agreeable",
@@ -169,7 +171,7 @@ const infiltrationGames = [
     },
     {
         name: "remember all the mines",
-        init: function (screen) {
+        init: function (screen: any) {
             const rows = getEl(screen, "p");
             let gridSize = null;
             switch (rows.length) {
@@ -214,17 +216,17 @@ const infiltrationGames = [
                 }
             }
         },
-        play: function (screen) { },
+        play: function (screen: any) { },
     },
     {
         name: "mark all the mines",
-        init: function (screen) {
+        init: function (screen: any) {
             state.game.x = 0;
             state.game.y = 0;
             state.game.cols = state.game.data[0].length;
             state.game.dir = 1;
         },
-        play: function (screen) {
+        play: function (screen: any) {
             let { data, x, y, cols, dir } = state.game;
 
             if (data[y][x]) {
@@ -251,10 +253,10 @@ const infiltrationGames = [
     },
     {
         name: "match the symbols",
-        init: function (screen) {
+        init: function (screen: any) {
             const data = getLines(getEl(screen, "h5 span"));
             const rows = getLines(getEl(screen, "p"));
-            const keypad = [];
+            const keypad: any[] = [];
             const targets = [];
             let gridSize = null;
             switch (rows.length) {
@@ -295,7 +297,7 @@ const infiltrationGames = [
             }
             //foreach data get coords of keypad entry
             for (let i = 0; i < data.length; i++) {
-                const symbol = data[i].trim();
+                const symbol: any = data[i].trim();
                 //for each keypad entry
                 for (let j = 0; j < keypad.length; j++) {
                     const k = keypad[j].indexOf(symbol);
@@ -310,7 +312,7 @@ const infiltrationGames = [
             state.game.x = 0;
             state.game.y = 0;
         },
-        play: function (screen) {
+        play: function () {
             const target = state.game.data[0];
             let { x, y } = state.game;
 
@@ -344,15 +346,15 @@ const infiltrationGames = [
     },
     {
         name: "cut the wires with the following properties",
-        init: function (screen) {
+        init: function (screen: any) {
             let numberHack = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-            const colors = {
+            const colors: any = {
                 red: "red",
                 white: "white",
                 blue: "blue",
                 "rgb(255, 193, 7)": "yellow",
             };
-            const wireColor = {
+            const wireColor: any = {
                 red: [],
                 white: [],
                 blue: [],
@@ -408,14 +410,14 @@ const infiltrationGames = [
                         continue;
                     }
 
-                    wireColor[color].forEach((num) => wires.push(num));
+                    wireColor[color].forEach((num: any) => wires.push(num));
                 }
             }
 
             // new Set() removes duplicate elements.
             state.game.data = [...new Set(wires)];
         },
-        play: function (screen) {
+        play: function (screen: any) {
             const wire = state.game.data;
             //state.game.data.shift();
             if (!wire) {
@@ -432,7 +434,7 @@ const infiltrationGames = [
  * Returns a list of DOM elements from the main game
  * container.
  */
-function getEl(parent: string | Document | Element, selector?: string) {
+function getEl(parent: string | Document | Element, selector: string = ""): any {
     let prefix = ":scope";
 
     if ("string" === typeof parent) {
@@ -469,7 +471,7 @@ function infLoop() {
 /**
  * Returns the first element with matching text content.
  */
-function filterByText(elements, text) {
+function filterByText(elements: any, text: any) {
     text = text.toLowerCase();
 
     for (let i = 0; i < elements.length; i++) {
@@ -489,9 +491,9 @@ function filterByText(elements, text) {
  * @param {NodeList} elements
  * @returns {string[]}
  */
-function getLines(elements) {
-    const lines = [];
-    elements.forEach((el) => lines.push(el.textContent));
+function getLines(elements: any) {
+    const lines: any[] = [];
+    elements.forEach((el: any) => lines.push(el.textContent));
 
     return lines;
 }
@@ -510,7 +512,7 @@ function endInfiltration() {
  *
  * @param {string|int} keyOrCode A single letter (string) or key-code to send.
  */
-function pressKey(keyOrCode) {
+function pressKey(keyOrCode: string | number) {
     let keyCode = 0;
     let key = "";
 
@@ -526,7 +528,7 @@ function pressKey(keyOrCode) {
         return;
     }
 
-    function sendEvent(event) {
+    function sendEvent(event: any) {
         const keyboardEvent = new KeyboardEvent(event, {
             key,
             keyCode,
@@ -555,7 +557,7 @@ function waitForStart() {
         return;
     }
     const title = h4[0].textContent;
-    if (0 !== title.indexOf("Infiltrating")) {
+    if (0 !== (title ?? "").indexOf("Infiltrating")) {
         return;
     }
 
@@ -564,7 +566,7 @@ function waitForStart() {
         return;
     }
 
-    state.company = title.substr(13);
+    state.company = (title ?? "").substring(13)
     state.started = true;
     wrapEventListeners();
 
@@ -594,7 +596,7 @@ function playGame() {
         return;
     }
 
-    const title = h4[0].textContent.trim().toLowerCase().split(/[!.(]/)[0];
+    const title = (h4[0].textContent ?? "").trim().toLowerCase().split(/[!.(]/)[0];
 
     if ("infiltration successful" === title) {
         endInfiltration();
@@ -630,7 +632,7 @@ function wrapEventListeners() {
     if (!doc._addEventListener) {
         doc._addEventListener = doc.addEventListener;
 
-        doc.addEventListener = function (type, callback, options) {
+        doc.addEventListener = function (type: any, callback: any, options: any) {
             if ("undefined" === typeof options) {
                 options = false;
             }
@@ -638,7 +640,7 @@ function wrapEventListeners() {
 
             // For this script, we only want to modify "keydown" events.
             if ("keydown" === type) {
-                handler = function (...args) {
+                handler = function (...args: any) {
                     if (!args[0].isTrusted) {
                         const hackedEv: any = {};
 
@@ -690,7 +692,7 @@ function wrapEventListeners() {
     if (!doc._removeEventListener) {
         doc._removeEventListener = doc.removeEventListener;
 
-        doc.removeEventListener = function (type, callback, options) {
+        doc.removeEventListener = function (type: any, callback: any, options: any) {
             if ("undefined" === typeof options) {
                 options = false;
             }
@@ -742,8 +744,7 @@ function unwrapEventListeners() {
 }
 // function unwrapEventListeners() { }
 
-/** @param {NS} ns */
-export async function main(ns) {
+export async function main(ns: NS) {
     const args = ns.flags([
         ["start", false],
         ["stop", false],
@@ -751,7 +752,7 @@ export async function main(ns) {
         ["quiet", false],
     ]);
 
-    function print(msg) {
+    function print(msg: any) {
         if (!args.quiet) {
             ns.tprint(`\n${msg}\n`);
         }

@@ -1,4 +1,4 @@
-import { NS, Player, Server } from "NetscriptDefinitions"
+import { NS, Player, Server } from "@ns"
 import { buildServerTree, buildPath } from "scripts/utils/ns-utils"
 import { home } from "scripts/utils/constants"
 
@@ -21,8 +21,8 @@ export async function autoInstallBackdoor(ns: NS, server: Server, player: Player
         ns.tprint(`Skipping ${server.hostname}, backdoor already installed`)
         return false
     }
-    if (!(server.hasAdminRights && server.requiredHackingSkill <= player.skills.hacking)) {
-        const portsRequired = server.numOpenPortsRequired - server.openPortCount
+    if (!(server.hasAdminRights && (server.requiredHackingSkill ?? Infinity) <= player.skills.hacking)) {
+        const portsRequired = (server.numOpenPortsRequired ?? Infinity) - (server.openPortCount ?? 0)
         const hackSkill = server.requiredHackingSkill
         ns.tprint(`Skipping ${server.hostname}, no root access (missing ${portsRequired} ports), or not enough hack levels (required ${hackSkill})`)
         return false

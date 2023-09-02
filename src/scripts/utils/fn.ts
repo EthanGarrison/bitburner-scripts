@@ -6,4 +6,6 @@ const compose = (...fns: Function[]) => (x: any) => fns.reduceRight((acc, fn) =>
 
 const identity = <I>(_: I) => _
 
-export { compose, identity }
+const empty = () => {}
+
+export { compose, identity, empty }

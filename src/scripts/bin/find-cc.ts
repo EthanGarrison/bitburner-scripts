@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import { genDeepScan } from "scripts/utils/ns-utils"
 
 export async function main(ns: NS) {

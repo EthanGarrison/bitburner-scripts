@@ -1,4 +1,4 @@
-import { NS } from "NetscriptDefinitions"
+import { NS } from "@ns"
 import * as iter from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
 

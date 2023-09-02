@@ -2,7 +2,7 @@
  * Generator Utils
  * Exposes a bunch of handy methods for working from generators rather than arrays
  */
-import { identity } from "scripts/utils/fn"
+import { identity, empty } from "scripts/utils/fn"
 
 type Zipped<A, B> = { fst: A, snd: B }
 type Iter<A> = Generator<A, void, undefined>
@@ -94,7 +94,7 @@ export const takeWhile = <I>(fn: (i: I) => boolean) => function* (gen: Iterable<
  */
 export const zip2 = <A, B>(other: Iterable<A>) => function* (gen: Iterable<B>): Iter<Zipped<A,B>> {
     // Get the iterators for our given iterables
-    const otherIter = other[Symbol.iterator]()
+    const otherIter: Iterator<A, any, undefined> = other[Symbol.iterator]()
     const genIter = gen[Symbol.iterator]()
 
     // While neither iterator is finished, wrap them in a tuple and yield
@@ -106,9 +106,9 @@ export const zip2 = <A, B>(other: Iterable<A>) => function* (gen: Iterable<B>): 
         genVal = genIter.next()
     }
 
-    // Clean-up
-    otherIter.return()
-    genIter.return()
+    // Clean-up.  Semicolons necessary because JS is dumb
+    (otherIter.return ?? empty)();
+    (genIter.return ?? empty)();
 }
 
 /**
