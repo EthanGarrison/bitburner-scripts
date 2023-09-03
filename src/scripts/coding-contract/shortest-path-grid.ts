@@ -2,6 +2,7 @@ import { NS } from "@ns"
 
 import * as gen from "scripts/utils/iterable"
 import * as fn from "scripts/utils/fn"
+import * as typeCheck from "scripts/utils/type"
 
 type Point = [number,number]
 
@@ -87,4 +88,12 @@ export function shortestPathGrid(grid: number[][]): string {
 
 export async function main(ns: NS) {
     ns.tprint(shortestPathGrid([[0, 1, 0, 0, 0], [0, 0, 0, 1, 0]]))
+    ns.tprint(shortestPathGrid([
+        [0,1,1,0,1,0],
+        [0,0,1,1,1,1],
+        [0,0,0,1,0,0],
+        [1,0,1,1,1,1],
+        [0,1,1,0,0,1],
+        [1,1,0,0,0,1],
+        [0,0,1,0,1,0]]))
 }

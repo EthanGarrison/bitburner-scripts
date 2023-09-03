@@ -1,3 +1,4 @@
+import { NS } from "@ns"
 import { isDefined } from "scripts/utils/type"
 
 /**
@@ -43,19 +44,29 @@ import { isDefined } from "scripts/utils/type"
  * @returns Array containing the coloring of each vector
  */
 export function twoColorCheck([_, connections]: [number, number[][]]): number[] {
-    const colorings: number[] = []
-    for(const [left, right] of connections) {
-        // Get left's color, defaulting to 0
-        let leftColor = isDefined(colorings[left]) ? colorings[left] : 0
-        colorings[left] = leftColor
+  // Sorting the connections because my code gets confused if it doesn't do all connections for a node in order.
+  // Probably should come up with solution that solves this, but means doing actual graph implementation.  Yuck.
+  // Also, my code will probably do weird things if the connection description isn't sorted.  As in [0,1], not [1,0].
+  // Basically, using lots of assumptions, so probably lots of buggy edge cases
+  const sortedConnections = [...connections].sort((l,r) => l[0] - r[0])
+  const colorings: number[] = []
+  for (const [left, right] of sortedConnections) {
+    // Get left's color, defaulting to 0
+    let leftColor = isDefined(colorings[left]) ? colorings[left] : 0
+    colorings[left] = leftColor
 
-        // Get right's color, defaulting to 1
-        let rightColor = isDefined(colorings[right]) ? colorings[right] : 1
+    // Get right's color, defaulting to the opposite of left color
+    let rightColor = isDefined(colorings[right]) ? colorings[right] : (leftColor == 0) ? 1 : 0
 
-        // If the colors match, then we have seen a connection that contradicts the current connection
-        if(leftColor == rightColor) return []
-        colorings[right] = rightColor
-    }
+    // If the colors match, then we have seen a connection that contradicts the current connection
+    if (leftColor == rightColor) return []
+    colorings[right] = rightColor
+  }
 
-    return colorings
+  return colorings
+}
+
+export async function main(ns: NS) {
+  ns.tprint(twoColorCheck([4, [[0, 2], [1, 3], [0, 1], [2, 3]]]))
+  ns.tprint(twoColorCheck([12, [[4, 11], [4, 5], [2, 11], [7, 8], [9, 10], [3, 6], [5, 9], [0, 2], [8, 11], [4, 7], [4, 11], [7, 9], [0, 4], [3, 5], [3, 11], [0, 9], [1, 9], [5, 8], [2, 7], [0, 3], [9, 11], [2, 10]]]))
 }

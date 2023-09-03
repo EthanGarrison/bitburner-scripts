@@ -9,12 +9,12 @@ import { simpleHackScript } from "scripts/utils/constants"
 export async function main(ns: NS) {
     const root = "home"
     const { target, "overwrite": killRunning, script } = ns.flags([
-        ["target", false],
+        ["target", ""],
         ["overwrite", false],
         ["script", simpleHackScript]
     ])
     if(typeof script != "string") throw "Script must be a path!"
-    if(typeof target != "string") throw "Target must be a valid server name!"
+    if(typeof target != "string" || target.length == 0) throw "Target must be a valid server name!"
     if(typeof killRunning != "boolean") throw "Overwrite is a flag and does not accept an argument!"
 
     fn.compose(
