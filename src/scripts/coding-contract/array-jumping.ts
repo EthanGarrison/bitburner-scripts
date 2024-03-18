@@ -22,10 +22,6 @@ export function arrayJumping(arr: number[]): number {
         for(const len of gen.range(head, 0, -1)) {
             const recursiveJump = recurse(currentSlice.slice(len), jumps + 1)
             if(recursiveJump < minJump && recursiveJump > 0) minJump = recursiveJump
-            // Minor optimization.  Assumption is that if we have found a jump smaller
-            // than the length we are checking, then we know that we have found something
-            // that can jump past us.  If we can jump past this point, no need to check
-            if(minJump <= len) break
         }
 
         return isFinite(minJump) ? minJump : 0
@@ -41,4 +37,5 @@ export async function main(ns: NS) {
     ns.tprint(arrayJumping([1,9,6,0,0,1,3,6])) // 2
     ns.tprint(arrayJumping([2,5,1,2,4,3,3,3,2,4,3,2,5,3,1,2,0,4,2,6,1,4,7,6])) // 7
     ns.tprint(arrayJumping([1,0,4,0,6,3,2,4,2,4,6,3,2,3,3,6,1])) // 0
+    ns.tprint(arrayJumping([2,2,5,1,0,6,5,3,1,0,1,5])) // 3
 }

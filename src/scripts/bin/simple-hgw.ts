@@ -31,7 +31,7 @@ export async function main(ns: NS) {
     const totalHackThreads = hgwCount.hack * totalOverSum
 
     // Given a server and script, attempt to allocate as many threads on this server as needed.
-    function allocateAndRun(server: string, script: string, target: string | number | boolean, threadAvailable: number, threadNeeded: number) {
+    function allocateAndRun(server: string, script: string, target: string, threadAvailable: number, threadNeeded: number) {
         if (threadNeeded > 0 && threadAvailable > 0) {
             const allocatedThreads = threadAvailable >= threadNeeded ? threadNeeded : threadAvailable
             ns.print(`Running ${allocatedThreads} for hack on ${server}`)

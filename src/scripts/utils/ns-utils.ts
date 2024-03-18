@@ -27,6 +27,8 @@ export interface ServerThread {
     thread: number
 }
 
+// Found in the source here: https://github.com/bitburner-official/bitburner-src/blob/dev/src/Server/data/Constants.ts#L19
+// Grow is the same as hack, multiplied by 2
 const HACK_SECURITY_DELTA = 0.002
 const GROW_SECURITY_DELTA = 0.004
 const WEAKEN_SECURITY_DELTA = 0.05

@@ -28,6 +28,7 @@ export async function main(ns: NS) {
 
     const totalThreads = iter.foldLeft<ServerThread, number>(0)((acc, { thread }) => acc + thread)(serverThreadList)
     ns.tprint(`Total threads available from open servers: ${totalThreads}`)
+
     // Would be better if we had a sort of State monad, until then will have to parse servers even after fulfilled requested threads
     iter.foldLeft<ServerThread, number>(Math.floor(totalThreads * percentage))((acc, { server, thread }) => {
         ns.tprint(`Trying to have ${server} use ${acc} threads, has ${thread} available`)

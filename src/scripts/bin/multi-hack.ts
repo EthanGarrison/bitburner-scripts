@@ -17,13 +17,17 @@ export async function main(ns: NS) {
     if(typeof target != "string" || target.length == 0) throw "Target must be a valid server name!"
     if(typeof killRunning != "boolean") throw "Overwrite is a flag and does not accept an argument!"
 
+    // Compose works bottom to top, so read backwards
     fn.compose(
+        // Copy script to each server and run
         iter.foreach(({ server, threads }: { server: string, threads: number }) => {
             ns.print(`Taking over ${server}`)
             ns.scp(script, server, root)
             ns.exec(script, server, threads, target)
         }),
+        // Debug
         iter.tap(({ server }: ServerThread) => { ns.print(`Attempting ${server}`) }),
+        // Get all servers + threads available on them
         getServerThreadsAvailable(ns, killRunning, script, target)
     )(genDeepScan(ns, root))
 }

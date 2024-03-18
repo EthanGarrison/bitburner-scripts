@@ -8,9 +8,9 @@ import * as iter from "scripts/utils/iterable"
 function upgradeNode({ print, hacknet }: NS, allowance: number, index: number, upgradeIncrement = 1) {
     const upgradeCommands = [
         // {"name": "cache", "cost": hacknet.getCacheUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCache(index, upgradeIncrement)},
-        {"name": "core", "cost": hacknet.getCoreUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeCore(index, upgradeIncrement)},
-        {"name": "level", "cost": hacknet.getLevelUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeLevel(index, upgradeIncrement)},
-        {"name": "ram", "cost": hacknet.getRamUpgradeCost(index, upgradeIncrement), "upgrade": () => hacknet.upgradeRam(index, upgradeIncrement)}
+        {"name": "core", "cost": hacknet.getCoreUpgradeCost(index, upgradeIncrement), upgrade() { hacknet.upgradeCore(index, upgradeIncrement) }},
+        {"name": "level", "cost": hacknet.getLevelUpgradeCost(index, upgradeIncrement), upgrade() { hacknet.upgradeLevel(index, upgradeIncrement) }},
+        {"name": "ram", "cost": hacknet.getRamUpgradeCost(index, upgradeIncrement), upgrade() { hacknet.upgradeRam(index, upgradeIncrement)}}
     ]
 
     const cheapestUpgrade = upgradeCommands.sort(({cost: costL}, {cost: costR}) => costL - costR)[0]
@@ -54,15 +54,12 @@ export async function main(ns: NS) {
                 availableCash -= totalCost
             }
         }
+
         const productionGenerated = getProductionPerSec(ns)
         await ns.sleep(sleepTimer)
         const loopEnd = new Date().getTime()
         // Skim 25% of production from hacknodes to keep as profit
         availableCash += (productionGenerated * ((loopEnd - loopStart) / 1000)) * 0.75
-        if(availableCash > ns.getPlayer().money * .2) {
-            ns.print(`Internal allocated cash ${availableCash} is more than actually available, resetting to 0`)
-            availableCash = 0
-        }
         ns.print(`New availableCash: ${availableCash}`)
     }
 }
