@@ -13,18 +13,16 @@ export async function main(ns: NS) {
 
     const root = "home"
     const { target, "overwrite": killRunning, script, percentage } = ns.flags([
-        ["target", false],
+        ["target", ""],
         ["overwrite", false],
         ["script", simpleHackScript],
         ["percentage", 0.10]
     ])
     if(typeof script != "string") throw "Script must be a path!"
-    if(typeof target != "string") throw "Target must be a valid server name!"
-    if(typeof percentage != "number" || (percentage <= 0 && percentage > 1)) throw "Percentage must be a number in the range (0,1]"
+    if(typeof target != "string" || target.length == 0) throw "Target must be a valid server name!"
+    if(typeof percentage != "number" || (percentage < 0 && percentage >= 1)) throw "Percentage must be a number in the range (0,1]"
 
-    const serverList = genDeepScan(ns, root)
-
-    const serverThreadList = getServerThreadsAvailable(ns, !!killRunning)(iter.toArray(serverList))
+    const serverThreadList = iter.toArray(getServerThreadsAvailable(ns, !!killRunning)(genDeepScan(ns, root)))
 
     const totalThreads = iter.foldLeft<ServerThread, number>(0)((acc, { thread }) => acc + thread)(serverThreadList)
     ns.tprint(`Total threads available from open servers: ${totalThreads}`)

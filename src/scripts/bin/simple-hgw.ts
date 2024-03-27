@@ -5,10 +5,10 @@ import { genDeepScan, getHGWCount, getServerThreadsAvailable, ServerThread, HGWT
 
 export async function main(ns: NS) {
     const { target, "overwrite": killRunning } = ns.flags([
-        ["target", false],
+        ["target", ""],
         ["overwrite", false]
     ])
-    if (typeof target != "string") throw "Target must be a valid server name!"
+    if (typeof target != "string" || target.length == 0) throw "Target must be a valid server name!"
     if (typeof killRunning != "boolean") throw "Overwrite is a flag and does not accept an argument!"
 
     const serverList = genDeepScan(ns)
@@ -20,12 +20,12 @@ export async function main(ns: NS) {
     const totalThreadCount = iter.foldLeft<ServerThread, number>(0)((acc: number, serverThreads: ServerThread) => acc + serverThreads.thread)(serverThreadList)
 
     // Basic math checks to say if we have enough threads for HGW
-    const hgwThreadSum = hgwCount.hack + hgwCount.grow + hgwCount.weaken
+    const hgwThreadSum = hgwCount.hack + Math.ceil(hgwCount.grow) + Math.ceil(hgwCount.weaken)
     if(hgwThreadSum == 0) throw "Calculated required threads was zero!"
     if(hgwThreadSum > totalThreadCount) throw "Calculated required threads greater than available!"
 
     // Calculate total thread count for HGW
-    const totalOverSum = totalThreadCount / hgwThreadSum
+    const totalOverSum = Math.floor(totalThreadCount / hgwThreadSum)
     const totalGrowThreads = hgwCount.grow * totalOverSum
     const totalWeakenThreads = hgwCount.weaken * totalOverSum
     const totalHackThreads = hgwCount.hack * totalOverSum

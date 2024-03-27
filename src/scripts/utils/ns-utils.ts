@@ -145,10 +145,8 @@ export function* genDeepScan(ns: NS, root = home) {
     yield* recurse(root)
 }
 
-export function getProfitableServers(ns: NS, count: number = 10): ServerRank[] {
+export function getProfitableServers(ns: NS): Iterable<ServerRank> {
     return fn.compose(
-        iter.foreach(_ => ns.tprint(_)),
-        iter.take(count),
         iter.sort((l: ServerRank, r: ServerRank) => r.rank - l.rank),
         iter.filter((sr: ServerRank) => sr.rank > 0),
         iter.map((_: string) => serverRank(ns, _)),
@@ -187,20 +185,19 @@ export function getHGWCount(ns: NS, server: Server, player: Player): HGWThreadCo
  * @param scriptArgs The expected args for the script.  Necessary for testing if script is already running on server
  * @returns 
  */
-export function getServerThreadsAvailable(
-    ns: NS,
-    killRunning = false,
-    script = simpleHackScript,
-    ...scriptArgs: (string | number | boolean)[]): (_: Iterable<string>) => Iterable<ServerThread> {
+export function getServerThreadsAvailable(ns: NS, killRunning = false, script = simpleHackScript, ...scriptArgs: (string | number | boolean)[]): (_: Iterable<string>) => Iterable<ServerThread> {
+    // If we are killing the script, then we don't care if it is running
+    const scriptRunningCheck = (server: string) => killRunning || !ns.isRunning(script, server, ...scriptArgs)
 
     return fn.compose(
-        iter.filter<{ threads: number }>(({ threads }) => threads > 0), // Skip if not enough available threads
+        iter.filter<ServerThread>(_ => _.thread > 0), // Skip if not enough available threads
         iter.map((server: string) => {
             if (killRunning) ns.killall(server)
             const serverMem = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
-            const threads = Math.max(Math.floor(serverMem / ns.getScriptRam(script, home)), 0)
-            return { server, threads }
+            const thread = Math.max(Math.floor(serverMem / ns.getScriptRam(script, home)), 0)
+            return { server, thread }
         }),
-        iter.filter((server: string) => server != home && ns.hasRootAccess(server) && !ns.isRunning(script, server, ...scriptArgs)),
+        iter.filter(scriptRunningCheck),
+        iter.filter((server: string) => server != home && ns.hasRootAccess(server)),
     )
 }

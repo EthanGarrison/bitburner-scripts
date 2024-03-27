@@ -20,13 +20,13 @@ export async function main(ns: NS) {
     // Compose works bottom to top, so read backwards
     fn.compose(
         // Copy script to each server and run
-        iter.foreach(({ server, threads }: { server: string, threads: number }) => {
+        iter.foreach(({ server, thread }: ServerThread) => {
             ns.print(`Taking over ${server}`)
             ns.scp(script, server, root)
-            ns.exec(script, server, threads, target)
+            ns.exec(script, server, thread, target)
         }),
         // Debug
-        iter.tap(({ server }: ServerThread) => { ns.print(`Attempting ${server}`) }),
+        iter.tap(({ server, thread }: ServerThread) => { ns.tprint(`Attempting ${server} with threads ${thread}`) }),
         // Get all servers + threads available on them
         getServerThreadsAvailable(ns, killRunning, script, target)
     )(genDeepScan(ns, root))

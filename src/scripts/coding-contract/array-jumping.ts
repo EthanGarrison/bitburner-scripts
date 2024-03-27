@@ -38,4 +38,5 @@ export async function main(ns: NS) {
     ns.tprint(arrayJumping([2,5,1,2,4,3,3,3,2,4,3,2,5,3,1,2,0,4,2,6,1,4,7,6])) // 7
     ns.tprint(arrayJumping([1,0,4,0,6,3,2,4,2,4,6,3,2,3,3,6,1])) // 0
     ns.tprint(arrayJumping([2,2,5,1,0,6,5,3,1,0,1,5])) // 3
+    ns.tprint(arrayJumping([6,6,2,3,3,4,2,2,4,3,5,4,2,6,1,1,1,5,4,2])) // 5
 }

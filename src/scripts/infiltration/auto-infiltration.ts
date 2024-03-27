@@ -64,7 +64,9 @@ const infiltrationGames = [
         init: function () { },
         play: function (screen: any) {
             const h4 = getEl(screen, "h4");
-            const code = h4[1].textContent;
+            const codes = h4[1].textContent;
+            const nextCodeIdx = codes.indexOf("?") - 1
+            const code = nextCodeIdx >= 0 ? codes[nextCodeIdx] : codes[codes.length-1]
 
             switch (code) {
                 case "↑":
@@ -113,7 +115,7 @@ const infiltrationGames = [
         },
     },
     {
-        name: "slash when his guard is down",
+        name: "attack when his guard is down",
         init: function (screen: any) {
             state.game.data = "wait";
         },
@@ -127,7 +129,7 @@ const infiltrationGames = [
 
             // Attack in next frame - instant attack sometimes
             // ends in failure.
-            if ('wait' === state.game.data && -1 !== data.indexOf("ATTACKING!")) {
+            if ('wait' === state.game.data && -1 !== data.indexOf("Preparing?")) {
                 state.game.data = "attack";
             }
         },

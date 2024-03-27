@@ -49,8 +49,8 @@ export async function main(ns: NS) {
                 availableCash -= newNodeCost
             }
             else {
-                const nodeCashAllowance = Math.floor((availableCash * 100) / nodeCount) / 100
-                const totalCost = iter.foldLeft<number, number>(0)((acc: number, nodeId: number) => acc + upgradeNode(ns, nodeCashAllowance, nodeId, 5))(iter.range(0, nodeCount))
+                const nodeCashAllowance = Math.floor(availableCash / nodeCount)
+                const totalCost = iter.foldLeft<number, number>(0)((acc: number, nodeId: number) => acc + upgradeNode(ns, nodeCashAllowance, nodeId, 1))(iter.range(0, nodeCount))
                 availableCash -= totalCost
             }
         }

@@ -1,6 +1,9 @@
 import { NS, Player, Server } from "@ns"
 import { buildServerTree, buildPath } from "scripts/utils/ns-utils"
 import { home } from "scripts/utils/constants"
+import { filter, foldLeft } from "scripts/utils/iterable"
+
+const rootPrograms = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "HTTPWorm.exe", "SQLInject.exe"]
 
 export function connectToServer(ns: NS, src: string, dest: string) {
     const serverTree = buildServerTree(ns, src)
@@ -41,4 +44,11 @@ export async function autoInstallBackdoor(ns: NS, server: Server, player: Player
     }
 
     return connectToServer(ns, server.hostname, currentServerName)
+}
+
+export function buyTorPrograms(ns: NS) {
+    // Filter by what we already own to reduce the calculated total cost
+	const ownedPrograms = ns.ls("home", ".exe")
+	const filtered = filter((_: string) => !ownedPrograms.includes(_))(rootPrograms)
+    return foldLeft<string, boolean>(true)((acc, program) => acc && ns.singularity.purchaseProgram(program))(filtered)
 }
