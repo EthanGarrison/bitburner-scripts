@@ -27,7 +27,7 @@ export async function autoInstallBackdoor(ns: NS, server: Server, player: Player
     if (!(server.hasAdminRights && (server.requiredHackingSkill ?? Infinity) <= player.skills.hacking)) {
         const portsRequired = (server.numOpenPortsRequired ?? Infinity) - (server.openPortCount ?? 0)
         const hackSkill = server.requiredHackingSkill
-        ns.tprint(`Skipping ${server.hostname}, no root access (missing ${portsRequired} ports), or not enough hack levels (required ${hackSkill})`)
+        ns.tprint(`Skipping ${server.hostname}, no root access (missing ${portsRequired >= 0 ? portsRequired : 0} ports), or not enough hack levels (required ${hackSkill})`)
         return false
     }
 
@@ -47,8 +47,11 @@ export async function autoInstallBackdoor(ns: NS, server: Server, player: Player
 }
 
 export function buyTorPrograms(ns: NS) {
-    // Filter by what we already own to reduce the calculated total cost
-	const ownedPrograms = ns.ls("home", ".exe")
-	const filtered = filter((_: string) => !ownedPrograms.includes(_))(rootPrograms)
-    return foldLeft<string, boolean>(true)((acc, program) => acc && ns.singularity.purchaseProgram(program))(filtered)
+    if(ns.singularity.purchaseTor()) {
+        // Filter by what we already own to reduce the calculated total cost
+        const ownedPrograms = ns.ls("home", ".exe")
+        const filtered = filter((_: string) => !ownedPrograms.includes(_))(rootPrograms)
+        return foldLeft<string, boolean>(true)((acc, program) => acc && ns.singularity.purchaseProgram(program))(filtered)
+    }
+    else return false
 }

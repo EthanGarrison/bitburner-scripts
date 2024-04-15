@@ -27,7 +27,7 @@ export function* range(start: number, end: number, step: number = 1) {
 export const map = <I, O>(fn: (i: I) => O) => function* (gen: Iterable<I>): Iter<O> { for (const i of gen) yield fn(i) }
 
 /**
- * Apply fn to given iterator.  Returns Iterator[B]
+ * Apply fn to given iterator, flattening the resulting iterables into a single interable.  Returns Iterator[B]
  */
 export const flatMap = <I, O>(fn: (i: I) => Iterable<O>) => function* (gen: Iterable<I>): Iter<O> { for (const i of gen) yield* fn(i) }
 
@@ -37,7 +37,7 @@ export const flatMap = <I, O>(fn: (i: I) => Iterable<O>) => function* (gen: Iter
 export const filter = <I>(fn: (i: I) => boolean) => function* (gen: Iterable<I>): Iter<I> { for (const i of gen) if (fn(i)) yield i }
 
 /**
- * Apply fn to given iterator.  Returns Iterator[()]
+ * Apply fn to given iterator
  */
 export const foreach = <I>(fn: (i: I) => void) => function (gen: Iterable<I>): void { for (const i of gen) { fn(i) } }
 

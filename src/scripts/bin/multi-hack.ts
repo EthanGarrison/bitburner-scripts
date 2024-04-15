@@ -26,7 +26,7 @@ export async function main(ns: NS) {
             ns.exec(script, server, thread, target)
         }),
         // Debug
-        iter.tap(({ server, thread }: ServerThread) => { ns.tprint(`Attempting ${server} with threads ${thread}`) }),
+        // iter.tap(({ server, thread }: ServerThread) => { ns.tprint(`Attempting ${server} with threads ${thread}`) }),
         // Get all servers + threads available on them
         getServerThreadsAvailable(ns, killRunning, script, target)
     )(genDeepScan(ns, root))
