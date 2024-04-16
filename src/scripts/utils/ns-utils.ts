@@ -1,8 +1,50 @@
-import { NS, Server, Player, ScriptArg } from "@ns"
+import { NS, Server, Player } from "@ns"
 import * as fn from "scripts/utils/fn"
 import * as iter from "scripts/utils/iterable"
 import * as typeCheck from "scripts/utils/type"
 import { home, simpleHackScript } from "scripts/utils/constants"
+
+// Hacky solution to not being able to import the typescript defs into the game
+export const EGCompanyName = [
+    "ECorp",
+    "MegaCorp",
+    "Bachman & Associates",
+    "Blade Industries",
+    "NWO",
+    "Clarke Incorporated",
+    "OmniTek Incorporated",
+    "Four Sigma",
+    "KuaiGong International",
+    "Fulcrum Technologies",
+    "Storm Technologies",
+    "DefComm",
+    "Helios Labs",
+    "VitaLife",
+    "Icarus Microsystems",
+    "Universal Energy",
+    "Galactic Cybersystems",
+    "AeroCorp",
+    "Omnia Cybersystems",
+    "Solaris Space Systems",
+    "DeltaOne",
+    "Global Pharmaceuticals",
+    "Nova Medical",
+    "Central Intelligence Agency",
+    "National Security Agency",
+    "Watchdog Security",
+    "LexoCorp",
+    "Rho Construction",
+    "Alpha Enterprises",
+    "Aevum Police Headquarters",
+    "SysCore Securities",
+    "CompuTek",
+    "NetLink Technologies",
+    "Carmichael Security",
+    "FoodNStuff",
+    "Joe's Guns",
+    "Omega Software",
+    "Noodle Bar",
+]
 
 export interface ServerTree<T> {
     node: T
@@ -36,7 +78,7 @@ function weakenCount(growCount: number) { return ((HACK_SECURITY_DELTA + GROW_SE
 
 /**
  * Ranks given server based on the overall calculated potential hacking revenue
- * 
+ *
  * Rank is weighted and filtered based on player skills, meaning that the rank will change overtime
  */
 function serverRank(ns: NS, server: string): ServerRank {
