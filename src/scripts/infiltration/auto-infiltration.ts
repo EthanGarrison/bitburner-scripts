@@ -67,13 +67,8 @@ const infiltrationGames = [
         play: function (screen: any) {
             const h4 = getEl(screen, "h4");
             const codes = h4[1].textContent;
-            let nextCodeIdx = codes.indexOf("?") - 1
-            // handle installed SoA Hermes augmentation
-            if (nextCodeIdx == -2) {
-                nextCodeIdx = state.game.codeIdx
-                state.game.codeIdx += 1
-            }
-            const code = nextCodeIdx >= 0 ? codes[nextCodeIdx] : codes[codes.length-1]
+            const code = codes[state.game.codeIdx]
+            state.game.codeIdx += 1
 
             switch (code) {
                 case "↑":
