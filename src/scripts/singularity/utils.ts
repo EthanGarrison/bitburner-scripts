@@ -47,7 +47,7 @@ export async function autoInstallBackdoor(ns: NS, server: Server, player: Player
 }
 
 export function buyTorPrograms(ns: NS) {
-    if(ns.singularity.purchaseTor()) {
+    if (ns.singularity.purchaseTor()) {
         // Filter by what we already own to reduce the calculated total cost
         const ownedPrograms = ns.ls("home", ".exe")
         const filtered = filter((_: string) => !ownedPrograms.includes(_))(rootPrograms)

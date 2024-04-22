@@ -46,11 +46,11 @@ const doc: Document & { _addEventListener?: any, _removeEventListener?: any, eve
 const infiltrationGames = [
     {
         name: "type it backward",
-        init: function (screen: any) {
+        init: function(screen: any) {
             const lines = getLines(getEl(screen, "p"));
             state.game.data = lines[0].split("");
         },
-        play: function () {
+        play: function() {
             if (!state.game.data || !state.game.data.length) {
                 delete state.game.data;
                 return;
@@ -61,19 +61,22 @@ const infiltrationGames = [
     },
     {
         name: "enter the code",
-        init: function () {
+        init: function() {
             state.game.codeIdx = 0
+            state.game.counter = 0
         },
-        play: function (screen: any) {
+        play: function(screen: any) {
             const h4 = getEl(screen, "h4");
             const codes = h4[1].textContent;
             let nextCodeIdx = codes.indexOf("?") - 1
             // handle installed SoA Hermes augmentation
-            if (nextCodeIdx == -2) {
+            state.game.counter++
+
+            if (nextCodeIdx == -2 && state.game.counter != codes.length) {
                 nextCodeIdx = state.game.codeIdx
                 state.game.codeIdx += 1
             }
-            const code = nextCodeIdx >= 0 ? codes[nextCodeIdx] : codes[codes.length-1]
+            const code = nextCodeIdx >= 0 ? codes[nextCodeIdx] : codes[codes.length - 1]
 
             switch (code) {
                 case "↑":
@@ -93,7 +96,7 @@ const infiltrationGames = [
     },
     {
         name: "close the brackets",
-        init: function (screen: any) {
+        init: function(screen: any) {
             const data = getLines(getEl(screen, "p"));
             const brackets = data.join("").split("");
             state.game.data = [];
@@ -112,7 +115,7 @@ const infiltrationGames = [
                 }
             }
         },
-        play: function (screen: any) {
+        play: function(screen: any) {
             if (!state.game.data || !state.game.data.length) {
                 delete state.game.data;
                 return;
@@ -123,10 +126,10 @@ const infiltrationGames = [
     },
     {
         name: "attack when his guard is down",
-        init: function (screen: any) {
+        init: function(screen: any) {
             state.game.data = "wait";
         },
-        play: function (screen: any) {
+        play: function(screen: any) {
             const data = getLines(getEl(screen, "h4"));
 
             if ("attack" === state.game.data) {
@@ -143,8 +146,8 @@ const infiltrationGames = [
     },
     {
         name: "say something nice about the guard",
-        init: function (screen: any) { },
-        play: function (screen: any) {
+        init: function(screen: any) { },
+        play: function(screen: any) {
             const correct = [
                 "affectionate",
                 "agreeable",
@@ -180,7 +183,7 @@ const infiltrationGames = [
     },
     {
         name: "remember all the mines",
-        init: function (screen: any) {
+        init: function(screen: any) {
             const rows = getEl(screen, "p");
             let gridSize = null;
             switch (rows.length) {
@@ -225,17 +228,17 @@ const infiltrationGames = [
                 }
             }
         },
-        play: function (screen: any) { },
+        play: function(screen: any) { },
     },
     {
         name: "mark all the mines",
-        init: function (screen: any) {
+        init: function(screen: any) {
             state.game.x = 0;
             state.game.y = 0;
             state.game.cols = state.game.data[0].length;
             state.game.dir = 1;
         },
-        play: function (screen: any) {
+        play: function(screen: any) {
             let { data, x, y, cols, dir } = state.game;
 
             if (data[y][x]) {
@@ -262,7 +265,7 @@ const infiltrationGames = [
     },
     {
         name: "match the symbols",
-        init: function (screen: any) {
+        init: function(screen: any) {
             const data = getLines(getEl(screen, "h5 span"));
             const rows = getLines(getEl(screen, "p"));
             const keypad: any[] = [];
@@ -321,7 +324,7 @@ const infiltrationGames = [
             state.game.x = 0;
             state.game.y = 0;
         },
-        play: function () {
+        play: function() {
             const target = state.game.data[0];
             let { x, y } = state.game;
 
@@ -355,7 +358,7 @@ const infiltrationGames = [
     },
     {
         name: "cut the wires with the following properties",
-        init: function (screen: any) {
+        init: function(screen: any) {
             let numberHack = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
             const colors: any = {
                 red: "red",
@@ -426,7 +429,7 @@ const infiltrationGames = [
             // new Set() removes duplicate elements.
             state.game.data = [...new Set(wires)];
         },
-        play: function (screen: any) {
+        play: function(screen: any) {
             const wire = state.game.data;
             //state.game.data.shift();
             if (!wire) {
@@ -641,7 +644,7 @@ function wrapEventListeners() {
     if (!doc._addEventListener) {
         doc._addEventListener = doc.addEventListener;
 
-        doc.addEventListener = function (type: any, callback: any, options: any) {
+        doc.addEventListener = function(type: any, callback: any, options: any) {
             if ("undefined" === typeof options) {
                 options = false;
             }
@@ -649,7 +652,7 @@ function wrapEventListeners() {
 
             // For this script, we only want to modify "keydown" events.
             if ("keydown" === type) {
-                handler = function (...args: any) {
+                handler = function(...args: any) {
                     if (!args[0].isTrusted) {
                         const hackedEv: any = {};
 
@@ -701,7 +704,7 @@ function wrapEventListeners() {
     if (!doc._removeEventListener) {
         doc._removeEventListener = doc.removeEventListener;
 
-        doc.removeEventListener = function (type: any, callback: any, options: any) {
+        doc.removeEventListener = function(type: any, callback: any, options: any) {
             if ("undefined" === typeof options) {
                 options = false;
             }
