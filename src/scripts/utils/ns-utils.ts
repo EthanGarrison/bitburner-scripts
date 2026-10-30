@@ -129,7 +129,7 @@ export function getRootAccess(ns: NS, target: string) {
 export function buildServerTree(ns: NS, root: string): ServerTree<string> {
     function recurse(current: string, seen = new Set([root])) {
         const genLeaves: (children: string[]) => Iterable<ServerTree<string>> = fn.compose(
-            iter.toArray,
+            iter.toArray<ServerTree<string>>,
             iter.map((child: string) => recurse(child, seen)),
             iter.filter((child: string) => {
                 const notSeen = !seen.has(child)

@@ -55,7 +55,7 @@ function shortestPathGrid2(grid: Grid): string {
         else if (newPaths.length == 1) return newPaths[0]
         else {
             const parsePaths = fn.compose(
-                gen.toArray,
+                gen.toArray<Point[]>,
                 gen.sort((l: Point[], r: Point[]) => l.length - r.length),
                 gen.filter((path: Point[]) => path.length > 0),
                 gen.map((path: Point[]) => recurse(path, updatedTravel))
@@ -135,7 +135,7 @@ export function shortestPathGrid(grid: number[][]): string {
             path.concat([[recentX, recentY - 1]])
         ]
         const parsePaths = fn.compose(
-            gen.toArray,
+            gen.toArray<Point[]>,
             gen.sort((l: Point[], r: Point[]) => l.length - r.length),
             gen.filter((path: Point[]) => path.length > 0),
             gen.map(recurse)
