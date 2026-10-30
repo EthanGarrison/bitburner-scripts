@@ -1,6 +1,13 @@
 import { NS } from "@ns"
-import { decideTask, isFullyOnline, SleeveConfig, SleeveTask } from "scripts/sleeve/decide"
-import { defaultSleeveStatTarget, sleeveGymCity, sleeveGymName } from "scripts/utils/constants"
+import { assignCompanies, getSleeveCompanies } from "scripts/sleeve/companies"
+import { decideTask, isFullyOnline, SleeveConfig, SleeveContext, SleeveTask } from "scripts/sleeve/decide"
+import {
+  defaultSleeveStatTarget,
+  SleeveCityName,
+  sleeveBladeburnerTrainingAction,
+  sleeveGymCity,
+  sleeveGymName
+} from "scripts/utils/constants"
 
 const loopSleepMs = 5000
 
@@ -38,37 +45,76 @@ export async function main(ns: NS) {
 
   const config: SleeveConfig = { statTarget: target, syncTarget }
 
+  const announcedIdle = new Set<number>()
+  const unavailableCompanies = new Set<string>()
+  const finalStatus = new Map<number, string>()
+
   do {
     let allOnline = true
+    const companies = assignCompanies(sleeveIndexes, getSleeveCompanies(ns))
+    const jobs = ns.getPlayer().jobs
+    const bladeburnerUnlocked = isBladeburnerUnlocked(ns)
 
     for (const index of sleeveIndexes) {
       const sleeve = ns.sleeve.getSleeve(index)
       if (!isFullyOnline(sleeve, config)) allOnline = false
 
-      const task = decideTask(sleeve, config)
-      if (isTaskApplied(ns, index, task)) continue
+      let company = companies.get(index)
+      if (company && jobs[company.name] === undefined) {
+        if (!unavailableCompanies.has(company.name)) {
+          unavailableCompanies.add(company.name)
+          ns.print(`Sleeve ${index}: no job at ${company.name}, skipping company work`)
+        }
+        company = undefined
+      }
 
-      if (task.kind == "train" && sleeve.city != sleeveGymCity) {
-        if (!ns.sleeve.travel(index, sleeveGymCity)) {
-          ns.print(`Sleeve ${index}: unable to travel to ${sleeveGymCity}`)
+      const context: SleeveContext = { bladeburnerUnlocked, company }
+      const task = decideTask(sleeve, config, context)
+
+      if (task.kind == "idle" && !announcedIdle.has(index)) {
+        announcedIdle.add(index)
+        ns.tprint(`Sleeve ${index}: idle, nothing to assign (no Bladeburner and no company job)`)
+      }
+
+      if (isTaskApplied(ns, index, task)) {
+        finalStatus.set(index, describeTask(task))
+        continue
+      }
+
+      const city = requiredCity(task)
+      if (city && sleeve.city != city) {
+        if (!ns.sleeve.travel(index, city)) {
+          ns.print(`Sleeve ${index}: unable to travel to ${city}`)
+          finalStatus.set(index, `failed (travel to ${city}): ${describeTask(task)}`)
           continue
         }
-        ns.print(`Sleeve ${index}: traveled to ${sleeveGymCity}`)
+        ns.print(`Sleeve ${index}: traveled to ${city}`)
       }
 
       if (applyTask(ns, index, task)) {
         ns.print(`Sleeve ${index}: ${describeTask(task)}`)
+        finalStatus.set(index, describeTask(task))
       } else {
         ns.print(`Sleeve ${index}: failed to start ${describeTask(task)}`)
+        finalStatus.set(index, `failed: ${describeTask(task)}`)
       }
     }
 
+    // Jobs and Bladeburner tasks are decided only once a sleeve is online, and are applied in this same pass
     if (allOnline && !watch) break
 
     await ns.sleep(loopSleepMs)
   } while (true)
 
-  ns.print("All sleeves are fully online")
+  ns.tprint(["Sleeve summary:", ...sleeveIndexes.map(index => `  Sleeve ${index}: ${finalStatus.get(index) ?? "idle"}`)].join("\n"))
+}
+
+function isBladeburnerUnlocked(ns: NS): boolean {
+  try {
+    return ns.bladeburner.inBladeburner()
+  } catch {
+    return false
+  }
 }
 
 function parseSleeveIndexes(raw: unknown, sleeveCount: number): number[] | undefined {
@@ -87,6 +133,8 @@ function isTaskApplied(ns: NS, index: number, task: SleeveTask): boolean {
     case "shock": return current?.type == "RECOVERY"
     case "sync": return current?.type == "SYNCHRO"
     case "train": return current?.type == "CLASS" && current.classType == task.stat.gymType
+    case "bladeburnerTraining": return current?.type == "BLADEBURNER" && current.actionName == sleeveBladeburnerTrainingAction
+    case "work": return current?.type == "COMPANY" && current.companyName == task.company.name
     // Idle leaves the sleeve on whatever it is doing; later phases will assign work
     case "idle": return true
   }
@@ -97,10 +145,30 @@ function applyTask(ns: NS, index: number, task: SleeveTask): boolean {
     case "shock": return ns.sleeve.setToShockRecovery(index)
     case "sync": return ns.sleeve.setToSynchronize(index)
     case "train": return ns.sleeve.setToGymWorkout(index, sleeveGymName, task.stat.gymType)
+    case "bladeburnerTraining": return ns.sleeve.setToBladeburnerAction(index, sleeveBladeburnerTrainingAction)
+    case "work": return ns.sleeve.setToCompanyWork(index, task.company.name)
     case "idle": return true
   }
 }
 
+function requiredCity(task: SleeveTask): SleeveCityName | undefined {
+  switch (task.kind) {
+    case "train": return sleeveGymCity
+    case "work": return task.company.city
+    case "shock":
+    case "sync":
+    case "bladeburnerTraining":
+    case "idle": return undefined
+  }
+}
+
 function describeTask(task: SleeveTask): string {
-  return task.kind == "train" ? `train ${task.stat.skill}` : task.kind
+  switch (task.kind) {
+    case "train": return `train ${task.stat.skill}`
+    case "work": return `work at ${task.company.name}`
+    case "bladeburnerTraining": return "Bladeburner training"
+    case "shock":
+    case "sync":
+    case "idle": return task.kind
+  }
 }
