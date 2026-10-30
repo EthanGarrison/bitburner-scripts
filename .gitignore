@@ -2,3 +2,6 @@
 /dist
 /node_modules
 NetscriptDefinitions.d.ts
+/.worktree
+/.snapshot
+/.bitburner.sock

@@ -1,0 +1,9 @@
+{
+  "port": 12525,
+  "controlSocket": ".bitburner.sock",
+  "scriptsFolder": "src",
+  "allowedFiletypes": [".js", ".jsx", ".ts", ".tsx", ".txt"],
+  "allowDeletingFiles": false,
+  "pushAllOnConnection": false,
+  "definitionFile": "NetscriptDefinitions.d.ts"
+}

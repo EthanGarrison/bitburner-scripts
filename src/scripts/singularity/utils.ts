@@ -1,9 +1,9 @@
-import { NS, Player, Server } from "@ns"
+import { FactionName, NS, Player, ProgramName, Server } from "@ns"
 import { buildServerTree, buildPath } from "scripts/utils/ns-utils"
 import { home } from "scripts/utils/constants"
 import { filter, foldLeft } from "scripts/utils/iterable"
 
-const rootPrograms = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "HTTPWorm.exe", "SQLInject.exe"]
+const rootPrograms: ProgramName[] = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "HTTPWorm.exe", "SQLInject.exe"]
 
 export function connectToServer(ns: NS, src: string, dest: string) {
     const serverTree = buildServerTree(ns, src)
@@ -18,7 +18,7 @@ export function connectToServer(ns: NS, src: string, dest: string) {
     return true
 }
 
-export async function autoInstallBackdoor(ns: NS, server: Server, player: Player, faction?: string) {
+export async function autoInstallBackdoor(ns: NS, server: Server, player: Player, faction?: FactionName) {
     const currentServerName = ns.singularity.getCurrentServer()
     if (server.backdoorInstalled || server.hostname == home) {
         ns.tprint(`Skipping ${server.hostname}, backdoor already installed`)
@@ -50,8 +50,8 @@ export function buyTorPrograms(ns: NS) {
     if (ns.singularity.purchaseTor()) {
         // Filter by what we already own to reduce the calculated total cost
         const ownedPrograms = ns.ls("home", ".exe")
-        const filtered = filter((_: string) => !ownedPrograms.includes(_))(rootPrograms)
-        return foldLeft<string, boolean>(true)((acc, program) => acc && ns.singularity.purchaseProgram(program))(filtered)
+        const filtered = filter((_: ProgramName) => !ownedPrograms.includes(_))(rootPrograms)
+        return foldLeft<ProgramName, boolean>(true)((acc, program) => acc && ns.singularity.purchaseProgram(program))(filtered)
     }
     else return false
 }

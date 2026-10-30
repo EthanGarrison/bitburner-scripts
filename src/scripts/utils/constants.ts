@@ -7,8 +7,8 @@ export const serverFactionMap: any = {
     "run4theh111z": "BitRunners"
 }
 
-export const simpleHackScript = "/scripts/bin/simple-hack.js"
+export const simpleHackScript = "/scripts/bin/simple-hack.ts"
 
-export const loopHackScript = "/scripts/bin/hack.js"
-export const loopGrowScript = "/scripts/bin/grow.js"
-export const loopWeakenScript = "/scripts/bin/weaken.js"
+export const loopHackScript = "/scripts/bin/hack.ts"
+export const loopGrowScript = "/scripts/bin/grow.ts"
+export const loopWeakenScript = "/scripts/bin/weaken.ts"
