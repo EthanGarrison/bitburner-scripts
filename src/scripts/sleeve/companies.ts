@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { sleeveCompanies } from "scripts/utils/constants"
+import { sleeveCompanies, SleeveCompanyName } from "scripts/utils/constants"
 import { SleeveCompany } from "scripts/sleeve/decide"
 
 /**
@@ -10,13 +10,22 @@ export function getSleeveCompanies(_ns: NS): readonly SleeveCompany[] {
   return sleeveCompanies
 }
 
-/** Assigns companies to sleeves by position; sleeves beyond the list get no company */
-export function assignCompanies(
+/** Assigns items to sleeves by position; sleeves beyond the list get nothing */
+export function assignByPosition<T>(
   sleeveIndexes: readonly number[],
-  companies: readonly SleeveCompany[]
-): Map<number, SleeveCompany> {
+  items: readonly T[]
+): Map<number, T> {
   return new Map(
     sleeveIndexes.flatMap((sleeveIndex, position) =>
-      position < companies.length ? [[sleeveIndex, companies[position]] as const] : [])
+      position < items.length ? [[sleeveIndex, items[position]] as const] : [])
   )
+}
+
+/** Assigns the listed companies the player holds a job at to sleeves by position */
+export function assignCompanies(
+  sleeveIndexes: readonly number[],
+  companies: readonly SleeveCompany[],
+  jobs: Partial<Record<SleeveCompanyName, unknown>>
+): Map<number, SleeveCompany> {
+  return assignByPosition(sleeveIndexes, companies.filter(company => jobs[company.name] !== undefined))
 }

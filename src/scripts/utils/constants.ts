@@ -31,7 +31,59 @@ export const sleeveTrainableStats = [
 export type SleeveCityName = Parameters<NS["sleeve"]["travel"]>[1]
 export type SleeveCompanyName = Parameters<NS["sleeve"]["setToCompanyWork"]>[1]
 
+export type SleeveFactionName = Parameters<NS["sleeve"]["setToFactionWork"]>[1]
+export type SleeveFactionWorkType = Parameters<NS["sleeve"]["setToFactionWork"]>[2]
+
+// Most reputation-efficient for sleeves first
+export const sleeveFactionWorkTypePreference = [
+  "hacking",
+  "field",
+  "security"
+] as const satisfies readonly SleeveFactionWorkType[]
+
+// Training in Bladeburner is used only to raise stats below target, never as idle work
 export const sleeveBladeburnerTrainingAction = "Training"
+
+export const sleeveCompanyCities: Partial<Record<SleeveCompanyName, SleeveCityName>> = {
+  "AeroCorp": "Aevum",
+  "Bachman & Associates": "Aevum",
+  "Clarke Incorporated": "Aevum",
+  "ECorp": "Aevum",
+  "Fulcrum Technologies": "Aevum",
+  "Galactic Cybersystems": "Aevum",
+  "NetLink Technologies": "Aevum",
+  "Aevum Police Headquarters": "Aevum",
+  "Rho Construction": "Aevum",
+  "Watchdog Security": "Aevum",
+  "Alpha Enterprises": "Sector-12",
+  "Blade Industries": "Sector-12",
+  "Carmichael Security": "Sector-12",
+  "Central Intelligence Agency": "Sector-12",
+  "DeltaOne": "Sector-12",
+  "FoodNStuff": "Sector-12",
+  "Four Sigma": "Sector-12",
+  "Icarus Microsystems": "Sector-12",
+  "Joe's Guns": "Sector-12",
+  "MegaCorp": "Sector-12",
+  "National Security Agency": "Sector-12",
+  "Universal Energy": "Sector-12",
+  "CompuTek": "Volhaven",
+  "Helios Labs": "Volhaven",
+  "LexoCorp": "Volhaven",
+  "NWO": "Volhaven",
+  "OmniTek Incorporated": "Volhaven",
+  "Omnia Cybersystems": "Volhaven",
+  "SysCore Securities": "Volhaven",
+  "KuaiGong International": "Chongqing",
+  "Solaris Space Systems": "Chongqing",
+  "Nova Medical": "Ishima",
+  "Omega Software": "Ishima",
+  "Storm Technologies": "Ishima",
+  "DefComm": "New Tokyo",
+  "Global Pharmaceuticals": "New Tokyo",
+  "Noodle Bar": "New Tokyo",
+  "VitaLife": "New Tokyo"
+}
 
 // Placeholder list, ordered by priority: the first company goes to the first sleeve, and so on
 export const sleeveCompanies = [
