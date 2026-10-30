@@ -59,5 +59,8 @@ export const sleeveRejectionCooldownMs = 60_000
 // Minimum gap between repeats of the same failure message
 export const sleeveMessageThrottleMs = 60_000
 
-// Passes allowed after all sleeves are online for post-online assignments to apply before giving up
-export const sleeveMaxSettlePasses = 20
+export const sleeveLoopSleepMs = 5000
+
+// Passes allowed after all sleeves are online for post-online assignments to apply before giving up;
+// twice the rejection cooldown so a rejected candidate can expire and be retried within the window
+export const sleeveMaxSettlePasses = Math.ceil(sleeveRejectionCooldownMs / sleeveLoopSleepMs) * 2

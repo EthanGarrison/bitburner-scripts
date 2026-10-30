@@ -8,7 +8,8 @@ import {
   gatherJobInputs,
   planAssignments,
   rankFactions,
-  rankJobs
+  rankJobs,
+  releasersFirst
 } from "scripts/sleeve/factions"
 import {
   defaultSleeveStatTarget,
@@ -16,13 +17,12 @@ import {
   sleeveBladeburnerTrainingAction,
   sleeveGymCity,
   sleeveGymName,
+  sleeveLoopSleepMs,
   sleeveMaxSettlePasses,
   sleeveMessageThrottleMs,
   sleeveRejectionCooldownMs,
   sleeveTrainableStats
 } from "scripts/utils/constants"
-
-const loopSleepMs = 5000
 
 export async function main(ns: NS) {
   ns.disableLog("sleep")
@@ -96,7 +96,10 @@ export async function main(ns: NS) {
     for (const company of listedCompanies) {
       if (jobs[company.name] === undefined) printOnce(`No job at ${company.name}, skipping company work`)
     }
-    const currentWork = new Map(sleeveIndexes.map(index => [index, currentWorkOf(ns.sleeve.getTask(index))] as const))
+    const allIndexes = Array.from({ length: sleeveCount }, (_, index) => index)
+    const currentWork = new Map(allIndexes.map(index => [index, currentWorkOf(ns.sleeve.getTask(index))] as const))
+    const heldElsewhere = allIndexes.filter(index => !pastTraining.includes(index)).map(index => currentWork.get(index)!)
+    const rejectionsNow = activeRejections(rejected, Date.now())
 
     const plan = pastTraining.length > 0
       ? planAssignments(
@@ -105,23 +108,35 @@ export async function main(ns: NS) {
         rankFactions(gatherFactionInputs(ns)),
         rankJobs(gatherJobInputs(ns)),
         currentWork,
-        activeRejections(rejected, Date.now())
+        rejectionsNow,
+        heldElsewhere
       )
       : new Map()
     let allApplied = true
     const bladeburnerUnlocked = isBladeburnerUnlocked(ns, printOnce)
 
-    for (const index of sleeveIndexes) {
-      const sleeve = sleeveStatuses.get(index)!
+    const decisions = new Map(sleeveIndexes.map(index => {
       const current = ns.sleeve.getTask(index)
       const currentGymStat = current?.type == "CLASS"
         ? sleeveTrainableStats.find(stat => stat.gymType == current.classType)?.gymType
         : undefined
-
       const context: SleeveContext = { bladeburnerUnlocked, currentGymStat, ...plan.get(index) }
-      const task = decideTask(sleeve, config, context)
+      return [index, { current, task: decideTask(sleeveStatuses.get(index)!, config, context) }] as const
+    }))
+
+    const applyOrder = releasersFirst(
+      sleeveIndexes,
+      index => currentWork.get(index)!,
+      index => claimOf(decisions.get(index)!.task)
+    )
+
+    for (const index of applyOrder) {
+      const sleeve = sleeveStatuses.get(index)!
+      const { current, task } = decisions.get(index)!
 
       if (task.kind == "idle") {
+        // Idle caused by cooldown-excluded candidates is not settled: the retry comes once the rejection expires
+        if ((rejectionsNow.get(index)?.size ?? 0) > 0) allApplied = false
         announce(`Sleeve ${index}: idle, nothing to assign (no Bladeburner, company, faction or job); still ${describeCurrentTask(current)}`)
       }
 
@@ -163,10 +178,16 @@ export async function main(ns: NS) {
     if (allOnline) passesSinceOnline++
     if (allOnline && !watch && (allApplied || passesSinceOnline >= sleeveMaxSettlePasses)) break
 
-    await ns.sleep(loopSleepMs)
+    await ns.sleep(sleeveLoopSleepMs)
   } while (true)
 
   ns.tprint(["Sleeve summary:", ...sleeveIndexes.map(index => `  Sleeve ${index}: ${finalStatus.get(index) ?? "idle"}`)].join("\n"))
+}
+
+function claimOf(task: SleeveTask): CurrentWork {
+  if (task.kind == "work") return { company: task.company.name }
+  if (task.kind == "faction") return { faction: task.faction.name }
+  return {}
 }
 
 function currentWorkOf(current: ReturnType<NS["sleeve"]["getTask"]>): CurrentWork {

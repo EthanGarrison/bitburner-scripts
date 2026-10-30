@@ -80,6 +80,21 @@ export type CurrentWork = {
   faction?: string
 }
 
+/** Sleeves already working on what another will leave must be applied before the one that takes it over */
+export function releasersFirst<T>(
+  items: readonly T[],
+  current: (item: T) => CurrentWork,
+  claimed: (item: T) => CurrentWork
+): T[] {
+  const releases = (item: T) => {
+    const held = current(item)
+    const next = claimed(item)
+    return (held.company !== undefined && held.company != next.company)
+      || (held.faction !== undefined && held.faction != next.faction)
+  }
+  return [...items.filter(releases), ...items.filter(item => !releases(item))]
+}
+
 /**
  * Over the given (online) sleeves: company-list work first, then distinct factions, then distinct
  * fallback jobs no other sleeve uses. Each step prefers what a sleeve already does when still a valid
@@ -92,8 +107,12 @@ export function planAssignments(
   factions: readonly RankedFaction[],
   jobs: readonly SleeveCompany[],
   current: ReadonlyMap<number, CurrentWork>,
-  rejected: ReadonlyMap<number, ReadonlySet<string>>
+  rejected: ReadonlyMap<number, ReadonlySet<string>>,
+  heldElsewhere: readonly CurrentWork[] = []
 ): Map<number, SleeveAssignment> {
+  const unavailable = new Set(heldElsewhere.flatMap(work => [work.company, work.faction]).filter(name => name !== undefined))
+  const available = <T extends { name: string }>(candidates: readonly T[]) =>
+    candidates.filter(candidate => !unavailable.has(candidate.name))
   const namesOf = (pick: (work: CurrentWork) => string | undefined) => new Map(
     sleeveIndexes.flatMap(index => {
       const name = pick(current.get(index) ?? {})
@@ -102,16 +121,16 @@ export function planAssignments(
   const currentCompanies = namesOf(work => work.company)
   const currentFactions = namesOf(work => work.faction)
 
-  const companyAssignments = assignSticky(sleeveIndexes, companies, currentCompanies, rejected)
+  const companyAssignments = assignSticky(sleeveIndexes, available(companies), currentCompanies, rejected)
   const withoutCompany = sleeveIndexes.filter(index => !companyAssignments.has(index))
 
-  const factionAssignments = assignSticky(withoutCompany, factions, currentFactions, rejected)
+  const factionAssignments = assignSticky(withoutCompany, available(factions), currentFactions, rejected)
   const withoutFaction = withoutCompany.filter(index => !factionAssignments.has(index))
 
   const usedCompanies = new Set([...companyAssignments.values()].map(company => company.name))
   const jobAssignments = assignSticky(
     withoutFaction,
-    jobs.filter(job => !usedCompanies.has(job.name)),
+    available(jobs).filter(job => !usedCompanies.has(job.name)),
     currentCompanies,
     rejected
   )
