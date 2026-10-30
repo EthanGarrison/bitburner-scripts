@@ -1,11 +1,23 @@
-import { sleeveTrainableStats } from "scripts/utils/constants"
+import { SleeveCityName, SleeveCompanyName, sleeveTrainableStats } from "scripts/utils/constants"
 
 export type TrainableStat = typeof sleeveTrainableStats[number]
+
+export type SleeveCompany = {
+  name: SleeveCompanyName
+  city: SleeveCityName
+}
+
+export type SleeveContext = {
+  bladeburnerUnlocked: boolean
+  company?: SleeveCompany
+}
 
 export type SleeveTask =
     | { kind: "shock" }
     | { kind: "sync" }
     | { kind: "train", stat: TrainableStat }
+    | { kind: "bladeburnerTraining" }
+    | { kind: "work", company: SleeveCompany }
     | { kind: "idle" }
 
 export type SleeveConfig = {
@@ -29,12 +41,18 @@ export function isFullyOnline(sleeve: SleeveStatus, config: SleeveConfig): boole
         && statsBelowTarget(sleeve, config).length == 0
 }
 
-/** Priority: shock recovery, then synchronize, then train the lowest stat below target */
-export function decideTask(sleeve: SleeveStatus, config: SleeveConfig): SleeveTask {
+/**
+ * Priority: shock recovery, then synchronize, then raise stats below target
+ * (Bladeburner Training when unlocked, otherwise gym), then company work or Bladeburner Training
+ */
+export function decideTask(sleeve: SleeveStatus, config: SleeveConfig, context: SleeveContext): SleeveTask {
   if (sleeve.shock > 0) return { kind: "shock" }
   if (sleeve.sync < config.syncTarget) return { kind: "sync" }
 
   const [lowest] = [...statsBelowTarget(sleeve, config)]
     .sort((left, right) => sleeve.skills[left.skill] - sleeve.skills[right.skill])
-  return lowest ? { kind: "train", stat: lowest } : { kind: "idle" }
+  if (lowest) return context.bladeburnerUnlocked ? { kind: "bladeburnerTraining" } : { kind: "train", stat: lowest }
+
+  if (context.company) return { kind: "work", company: context.company }
+  return context.bladeburnerUnlocked ? { kind: "bladeburnerTraining" } : { kind: "idle" }
 }
