@@ -7,7 +7,9 @@
     "typecheck:watch": "tsc --noEmit -w --preserveWatchOutput",
     "watch": "node tools/server.js",
     "snapshot": "node tools/snapshot.js",
-    "rpc": "node tools/rpc.js"
+    "rpc": "node tools/rpc.js",
+    "lint": "eslint . --ext .ts,.tsx,.js",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js --fix"
   },
   "author": "Ethan Garrison",
   "license": "ISC",

@@ -21,7 +21,7 @@ function runAttempt({ codingcontract }: NS, {file, server, type}: CCFile, attemp
   const data = codingcontract.getData(file, server)
   const triesRemaining = codingcontract.getNumTriesRemaining(file, server)
   let result: string = "No attempt"
-  if(attempt) {
+  if (attempt) {
     switch (type) {
       case "Array Jumping Game":
         result = codingcontract.attempt(!!arrayJumping(data) ? 1 : 0, file, server)

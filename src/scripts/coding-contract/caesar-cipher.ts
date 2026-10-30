@@ -15,11 +15,11 @@ const alphaLength = 26
 const alphaStart = 65
 
 export function caesarCipher([input, leftShift]: [string, number]): string {
-    function caesarCipherShift(charCode: number): string {
-        return ((charCode == 32) ? " " : String.fromCharCode(((alphaLength + (charCode - alphaStart - leftShift)) % alphaLength) + alphaStart))
-    }
-    return compose(
-        foldLeft<number, string>("")((acc, charCode: number) => acc + caesarCipherShift(charCode)),
-        map((c: string) => c.charCodeAt(0))
-    )(input)
+  function caesarCipherShift(charCode: number): string {
+    return ((charCode == 32) ? " " : String.fromCharCode(((alphaLength + (charCode - alphaStart - leftShift)) % alphaLength) + alphaStart))
+  }
+  return compose(
+    foldLeft<number, string>("")((acc, charCode: number) => acc + caesarCipherShift(charCode)),
+    map((c: string) => c.charCodeAt(0))
+  )(input)
 }

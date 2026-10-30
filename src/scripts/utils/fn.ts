@@ -11,7 +11,7 @@ const identity = <I>(_: I) => _
 const empty = () => {}
 
 function not<I>(p: Predicate<I>): Predicate<I> {
-    return (_: I) => !p(_)
+  return (_: I) => !p(_)
 }
 
 export { compose, identity, empty }

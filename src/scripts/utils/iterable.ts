@@ -13,12 +13,12 @@ export function* forever<I>(i: I): Iter<I> { while (true) yield i }
  * Create generator from [start to end) by step
  */
 export function* range(start: number, end: number, step: number = 1) {
-    const cmp = (i: number) => {
-        if (start <= end && step > 0) return i < end
-        else if (start > end && step < 0) return i > end
-        else return false
-    }
-    for (let i = start; cmp(i); i += step) yield i
+  const cmp = (i: number) => {
+    if (start <= end && step > 0) return i < end
+    else if (start > end && step < 0) return i > end
+    else return false
+  }
+  for (let i = start; cmp(i); i += step) yield i
 }
 
 /**
@@ -59,22 +59,22 @@ export const sort = <I>(cmp: (l: I, r: I) => number) => function* (gen: Iterable
  * foldLeft :: a => (a => b => a) => Generator b => a
  */
 export const foldLeft = <I, O>(init: O) => (fn: (acc: O, value: I) => O) => (gen: Iterable<I>): O => {
-    let acc = init
-    for (const i of gen) acc = fn(acc, i)
-    return acc
+  let acc = init
+  for (const i of gen) acc = fn(acc, i)
+  return acc
 }
 
 /**
  * Returns the first `cnt` of the given generator
  */
 export const take = <I>(cnt: number) => function* (gen: Iterable<I>): Iter<I> {
-    if (cnt <= 0) return
-    let cnti = 0
-    for (const i of gen) {
-        if (cnti >= cnt) break
-        cnti++
-        yield i
-    }
+  if (cnt <= 0) return
+  let cnti = 0
+  for (const i of gen) {
+    if (cnti >= cnt) break
+    cnti++
+    yield i
+  }
 }
 
 /**
@@ -93,22 +93,22 @@ export const takeWhile = <I>(fn: (i: I) => boolean) => function* (gen: Iterable<
  * Wrap values from other and gen into a tuple, stop with one of them stops producing values
  */
 export const zip2 = <A, B>(other: Iterable<A>) => function* (gen: Iterable<B>): Iter<Zipped<A,B>> {
-    // Get the iterators for our given iterables
-    const otherIter: Iterator<A, any, undefined> = other[Symbol.iterator]()
-    const genIter = gen[Symbol.iterator]()
+  // Get the iterators for our given iterables
+  const otherIter: Iterator<A, any, undefined> = other[Symbol.iterator]()
+  const genIter = gen[Symbol.iterator]()
 
-    // While neither iterator is finished, wrap them in a tuple and yield
-    let otherVal = otherIter.next()
-    let genVal = genIter.next()
-    while (!(otherVal.done && genVal.done)) {
-        yield ({ "fst": otherVal.value, "snd": genVal.value })
-        otherVal = otherIter.next()
-        genVal = genIter.next()
-    }
+  // While neither iterator is finished, wrap them in a tuple and yield
+  let otherVal = otherIter.next()
+  let genVal = genIter.next()
+  while (!(otherVal.done && genVal.done)) {
+    yield ({ "fst": otherVal.value, "snd": genVal.value })
+    otherVal = otherIter.next()
+    genVal = genIter.next()
+  }
 
-    // Clean-up.  Semicolons necessary because JS is dumb
-    (otherIter.return ?? empty)();
-    (genIter.return ?? empty)();
+  // Clean-up.  Semicolons necessary because JS is dumb
+  (otherIter.return ?? empty)();
+  (genIter.return ?? empty)();
 }
 
 /**

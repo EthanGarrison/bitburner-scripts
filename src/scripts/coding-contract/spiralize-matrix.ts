@@ -27,34 +27,34 @@ import { range } from "scripts/utils/iterable"
 
 export function spiralizeMatrix(input: number[][]): number[] {
 
-    const maxRow = input.length
-    const maxCol = input[0].length
-    const totalElems = (maxRow) * (maxCol)
-    const result: number[] = []
+  const maxRow = input.length
+  const maxCol = input[0].length
+  const totalElems = (maxRow) * (maxCol)
+  const result: number[] = []
 
-    let counter = 0
-    function generateRing(ringXStart: number, ringYStart: number, ringXEnd: number, ringYEnd: number) {
-        counter++
-        if (counter >= 100) return
-        for (const rowIdx of range(ringXStart, ringXEnd))
-            result.push(input[ringYStart][rowIdx])
+  let counter = 0
+  function generateRing(ringXStart: number, ringYStart: number, ringXEnd: number, ringYEnd: number) {
+    counter++
+    if (counter >= 100) return
+    for (const rowIdx of range(ringXStart, ringXEnd))
+      result.push(input[ringYStart][rowIdx])
 
-        for (const colIdx of range(ringYStart + 1, ringYEnd))
-            result.push(input[colIdx][ringXEnd - 1])
+    for (const colIdx of range(ringYStart + 1, ringYEnd))
+      result.push(input[colIdx][ringXEnd - 1])
 
-        // Exit here in case we are in a non-even width matrix
-        if (result.length == totalElems) return
-        for (const rowIdx of range(ringXEnd - 2, ringXStart, -1))
-            result.push(input[ringYEnd - 1][rowIdx])
+    // Exit here in case we are in a non-even width matrix
+    if (result.length == totalElems) return
+    for (const rowIdx of range(ringXEnd - 2, ringXStart, -1))
+      result.push(input[ringYEnd - 1][rowIdx])
 
-        for (const colIdx of range(ringYEnd - 1, ringYStart, -1))
-            result.push(input[colIdx][ringXStart])
+    for (const colIdx of range(ringYEnd - 1, ringYStart, -1))
+      result.push(input[colIdx][ringXStart])
 
-        if (result.length != totalElems) generateRing(ringXStart + 1, ringYStart + 1, ringXEnd - 1, ringYEnd - 1)
-    }
+    if (result.length != totalElems) generateRing(ringXStart + 1, ringYStart + 1, ringXEnd - 1, ringYEnd - 1)
+  }
 
-    generateRing(0, 0, maxCol, maxRow)
-    return result
+  generateRing(0, 0, maxCol, maxRow)
+  return result
 }
 
 // export async function main(ns: NS) {
