@@ -2,7 +2,6 @@ import { NS } from "@ns"
 import { assignByPosition } from "scripts/sleeve/companies"
 import { SleeveCompany, SleeveFaction } from "scripts/sleeve/decide"
 import {
-  sleeveCompanyCities,
   SleeveCompanyName,
   SleeveFactionName,
   sleeveFactionWorkTypePreference,
@@ -58,14 +57,11 @@ export function rankFactions(factions: readonly FactionInput[]): RankedFaction[]
     .map(({ name, workType, gap }) => ({ name, workType, gap }))
 }
 
-/** Highest salary first; companies without a known city are dropped */
+/** Highest salary first */
 export function rankJobs(jobs: readonly JobInput[]): SleeveCompany[] {
   return [...jobs]
     .sort((left, right) => right.salary - left.salary)
-    .flatMap(job => {
-      const city = sleeveCompanyCities[job.company]
-      return city ? [{ name: job.company, city }] : []
-    })
+    .map(job => ({ name: job.company }))
 }
 
 /**

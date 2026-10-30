@@ -1,5 +1,4 @@
 import {
-  SleeveCityName,
   SleeveCompanyName,
   SleeveFactionName,
   SleeveFactionWorkType,
@@ -10,7 +9,6 @@ export type TrainableStat = typeof sleeveTrainableStats[number]
 
 export type SleeveCompany = {
   name: SleeveCompanyName
-  city: SleeveCityName
 }
 
 export type SleeveFaction = {
