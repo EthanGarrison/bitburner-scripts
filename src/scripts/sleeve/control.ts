@@ -1,13 +1,24 @@
 import { NS } from "@ns"
-import { assignCompanies, getSleeveCompanies } from "scripts/sleeve/companies"
+import { getSleeveCompanies, heldCompanies } from "scripts/sleeve/companies"
 import { decideTask, isFullyOnline, SleeveConfig, SleeveContext, SleeveTask } from "scripts/sleeve/decide"
-import { gatherFactionInputs, gatherJobInputs, planAssignments, rankFactions, rankJobs } from "scripts/sleeve/factions"
+import {
+  activeRejections,
+  CurrentWork,
+  gatherFactionInputs,
+  gatherJobInputs,
+  planAssignments,
+  rankFactions,
+  rankJobs
+} from "scripts/sleeve/factions"
 import {
   defaultSleeveStatTarget,
   SleeveCityName,
   sleeveBladeburnerTrainingAction,
   sleeveGymCity,
   sleeveGymName,
+  sleeveMaxSettlePasses,
+  sleeveMessageThrottleMs,
+  sleeveRejectionCooldownMs,
   sleeveTrainableStats
 } from "scripts/utils/constants"
 
@@ -50,7 +61,8 @@ export async function main(ns: NS) {
   const announced = new Set<string>()
   const printedOnce = new Set<string>()
   const failedTravel = new Set<string>()
-  const rejected = new Map<number, Set<string>>()
+  const rejected = new Map<number, Map<string, number>>()
+  const lastPrinted = new Map<string, number>()
   const finalStatus = new Map<number, string>()
 
   const announce = (message: string) => {
@@ -64,8 +76,15 @@ export async function main(ns: NS) {
     ns.print(message)
   }
   const reject = (index: number, name: string) => {
-    rejected.set(index, new Set([...(rejected.get(index) ?? []), name]))
+    rejected.set(index, new Map([...(rejected.get(index) ?? []), [name, Date.now() + sleeveRejectionCooldownMs]]))
   }
+  const printThrottled = (message: string) => {
+    const now = Date.now()
+    if (now - (lastPrinted.get(message) ?? -Infinity) < sleeveMessageThrottleMs) return
+    lastPrinted.set(message, now)
+    ns.print(message)
+  }
+  let passesSinceOnline = 0
 
   do {
     const jobs = ns.getPlayer().jobs
@@ -77,18 +96,19 @@ export async function main(ns: NS) {
     for (const company of listedCompanies) {
       if (jobs[company.name] === undefined) printOnce(`No job at ${company.name}, skipping company work`)
     }
-    const companyAssignments = new Map([...assignCompanies(sleeveIndexes, listedCompanies, jobs)]
-      .filter(([index, company]) => !rejected.get(index)?.has(company.name)))
+    const currentWork = new Map(sleeveIndexes.map(index => [index, currentWorkOf(ns.sleeve.getTask(index))] as const))
 
     const plan = pastTraining.length > 0
       ? planAssignments(
-        sleeveIndexes,
-        companyAssignments,
+        pastTraining,
+        heldCompanies(listedCompanies, jobs),
         rankFactions(gatherFactionInputs(ns)),
         rankJobs(gatherJobInputs(ns)),
-        rejected
+        currentWork,
+        activeRejections(rejected, Date.now())
       )
       : new Map()
+    let allApplied = true
     const bladeburnerUnlocked = isBladeburnerUnlocked(ns, printOnce)
 
     for (const index of sleeveIndexes) {
@@ -118,6 +138,7 @@ export async function main(ns: NS) {
             failedTravel.add(travelKey)
             ns.print(`Sleeve ${index}: unable to travel to ${city}`)
           }
+          allApplied = false
           finalStatus.set(index, `failed (travel to ${city}): ${describeTask(task)}`)
           continue
         }
@@ -131,18 +152,27 @@ export async function main(ns: NS) {
       } else {
         const refusedName = rejectableName(task)
         if (refusedName) reject(index, refusedName)
-        ns.print(`Sleeve ${index}: failed to start ${describeTask(task)}`)
+        allApplied = false
+        printThrottled(`Sleeve ${index}: failed to start ${describeTask(task)}`)
         finalStatus.set(index, `failed: ${describeTask(task)}`)
       }
     }
 
-    // Jobs and Bladeburner tasks are decided only once a sleeve is online, and are applied in this same pass
-    if (allOnline && !watch) break
+    // Jobs and Bladeburner tasks are decided only once a sleeve is online; a failed start retries on the next
+    // pass (rejections steer the planner to other candidates) until everything applies or the pass guard trips
+    if (allOnline) passesSinceOnline++
+    if (allOnline && !watch && (allApplied || passesSinceOnline >= sleeveMaxSettlePasses)) break
 
     await ns.sleep(loopSleepMs)
   } while (true)
 
   ns.tprint(["Sleeve summary:", ...sleeveIndexes.map(index => `  Sleeve ${index}: ${finalStatus.get(index) ?? "idle"}`)].join("\n"))
+}
+
+function currentWorkOf(current: ReturnType<NS["sleeve"]["getTask"]>): CurrentWork {
+  if (current?.type == "COMPANY") return { company: current.companyName }
+  if (current?.type == "FACTION") return { faction: current.factionName }
+  return {}
 }
 
 function isBladeburnerUnlocked(ns: NS, printOnce: (message: string) => void): boolean {

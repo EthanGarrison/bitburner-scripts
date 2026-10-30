@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { assignByPosition } from "scripts/sleeve/companies"
+import { assignSticky } from "scripts/sleeve/companies"
 import { SleeveCompany, SleeveFaction } from "scripts/sleeve/decide"
 import {
   SleeveCompanyName,
@@ -64,35 +64,63 @@ export function rankJobs(jobs: readonly JobInput[]): SleeveCompany[] {
     .map(job => ({ name: job.company }))
 }
 
+export type RejectionBook = ReadonlyMap<number, ReadonlyMap<string, number>>
+
+/** Rejections still in effect at `now`, as the name sets the planner takes */
+export function activeRejections(book: RejectionBook, now: number): Map<number, Set<string>> {
+  return new Map([...book].map(([index, entries]) => [
+    index,
+    new Set([...entries].filter(([, expiresAt]) => expiresAt > now).map(([name]) => name))
+  ]))
+}
+
+/** What a sleeve is working on right now, by name */
+export type CurrentWork = {
+  company?: string
+  faction?: string
+}
+
 /**
- * Per sleeve, company list first, then distinct factions, then distinct fallback jobs that no other
- * sleeve uses. `rejected` holds names (faction or company) the game refused for a given sleeve.
+ * Over the given (online) sleeves: company-list work first, then distinct factions, then distinct
+ * fallback jobs no other sleeve uses. Each step prefers what a sleeve already does when still a valid
+ * candidate, so rank changes never swap sleeves, and holders are settled before newcomers so nobody is
+ * told to take a faction another sleeve still holds. `rejected` holds names the game refused per sleeve.
  */
 export function planAssignments(
   sleeveIndexes: readonly number[],
-  companyAssignments: ReadonlyMap<number, SleeveCompany>,
+  companies: readonly SleeveCompany[],
   factions: readonly RankedFaction[],
   jobs: readonly SleeveCompany[],
+  current: ReadonlyMap<number, CurrentWork>,
   rejected: ReadonlyMap<number, ReadonlySet<string>>
 ): Map<number, SleeveAssignment> {
-  const usedFactions = new Set<string>()
-  const usedCompanies = new Set<string>([...companyAssignments.values()].map(company => company.name))
+  const namesOf = (pick: (work: CurrentWork) => string | undefined) => new Map(
+    sleeveIndexes.flatMap(index => {
+      const name = pick(current.get(index) ?? {})
+      return name === undefined ? [] : [[index, name] as const]
+    }))
+  const currentCompanies = namesOf(work => work.company)
+  const currentFactions = namesOf(work => work.faction)
 
-  return new Map(sleeveIndexes.map((index): [number, SleeveAssignment] => {
-    const company = companyAssignments.get(index)
-    if (company) return [index, { company }]
+  const companyAssignments = assignSticky(sleeveIndexes, companies, currentCompanies, rejected)
+  const withoutCompany = sleeveIndexes.filter(index => !companyAssignments.has(index))
 
-    const refused = rejected.get(index)
-    const faction = factions.find(candidate => !usedFactions.has(candidate.name) && !refused?.has(candidate.name))
-    if (faction) {
-      usedFactions.add(faction.name)
-      return [index, { faction }]
-    }
+  const factionAssignments = assignSticky(withoutCompany, factions, currentFactions, rejected)
+  const withoutFaction = withoutCompany.filter(index => !factionAssignments.has(index))
 
-    const job = jobs.find(candidate => !usedCompanies.has(candidate.name) && !refused?.has(candidate.name))
-    if (job) usedCompanies.add(job.name)
-    return [index, { job }]
-  }))
+  const usedCompanies = new Set([...companyAssignments.values()].map(company => company.name))
+  const jobAssignments = assignSticky(
+    withoutFaction,
+    jobs.filter(job => !usedCompanies.has(job.name)),
+    currentCompanies,
+    rejected
+  )
+
+  return new Map(sleeveIndexes.map((index): [number, SleeveAssignment] => [index, {
+    company: companyAssignments.get(index),
+    faction: factionAssignments.get(index),
+    job: jobAssignments.get(index)
+  }]))
 }
 
 const reportedUnavailable = new Set<string>()
@@ -103,10 +131,20 @@ function reportSingularityUnavailable(ns: NS, what: string) {
   ns.print(`Singularity unavailable, skipping ${what}`)
 }
 
+// Sleeves cannot work for the player's gang faction; without the gang API there is no gang
+function getGangFaction(ns: NS): string | undefined {
+  try {
+    return ns.gang.inGang() ? ns.gang.getGangInformation().faction : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function gatherFactionInputs(ns: NS): FactionInput[] {
   try {
     const owned = new Set(ns.singularity.getOwnedAugmentations(true))
-    return ns.getPlayer().factions.map(name => ({
+    const gangFaction = getGangFaction(ns)
+    return ns.getPlayer().factions.filter(name => name != gangFaction).map(name => ({
       name,
       favor: ns.singularity.getFactionFavor(name),
       reputation: ns.singularity.getFactionRep(name),

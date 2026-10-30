@@ -52,3 +52,12 @@ export const sleeveCompanies = [
   { name: "Bachman & Associates" },
   { name: "NWO" }
 ] as const satisfies readonly { name: SleeveCompanyName }[]
+
+// How long a refused faction/company stays excluded for a sleeve before it is retried
+export const sleeveRejectionCooldownMs = 60_000
+
+// Minimum gap between repeats of the same failure message
+export const sleeveMessageThrottleMs = 60_000
+
+// Passes allowed after all sleeves are online for post-online assignments to apply before giving up
+export const sleeveMaxSettlePasses = 20

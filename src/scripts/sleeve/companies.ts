@@ -10,22 +10,40 @@ export function getSleeveCompanies(_ns: NS): readonly SleeveCompany[] {
   return sleeveCompanies
 }
 
-/** Assigns items to sleeves by position; sleeves beyond the list get nothing */
-export function assignByPosition<T>(
+/**
+ * Gives each sleeve a distinct candidate. Sleeves keep the candidate they already hold when it is still
+ * allowed, so changes in candidate order never swap sleeves; the remaining candidates, in order, go to the
+ * remaining sleeves. `rejected` holds names refused for a given sleeve.
+ */
+export function assignSticky<T extends { name: string }>(
   sleeveIndexes: readonly number[],
-  items: readonly T[]
+  candidates: readonly T[],
+  currentNames: ReadonlyMap<number, string>,
+  rejected: ReadonlyMap<number, ReadonlySet<string>>
 ): Map<number, T> {
-  return new Map(
-    sleeveIndexes.flatMap((sleeveIndex, position) =>
-      position < items.length ? [[sleeveIndex, items[position]] as const] : [])
-  )
+  const isAllowed = (index: number, candidate: T) => !rejected.get(index)?.has(candidate.name)
+
+  const kept = new Map<number, T>()
+  for (const index of sleeveIndexes) {
+    const claimed = new Set([...kept.values()].map(candidate => candidate.name))
+    const held = candidates.find(candidate =>
+      candidate.name == currentNames.get(index) && isAllowed(index, candidate) && !claimed.has(candidate.name))
+    if (held) kept.set(index, held)
+  }
+
+  const result = new Map(kept)
+  for (const index of sleeveIndexes.filter(sleeveIndex => !kept.has(sleeveIndex))) {
+    const claimed = new Set([...result.values()].map(candidate => candidate.name))
+    const next = candidates.find(candidate => !claimed.has(candidate.name) && isAllowed(index, candidate))
+    if (next) result.set(index, next)
+  }
+  return result
 }
 
-/** Assigns the listed companies the player holds a job at to sleeves by position */
-export function assignCompanies(
-  sleeveIndexes: readonly number[],
+/** The listed companies the player holds a job at */
+export function heldCompanies(
   companies: readonly SleeveCompany[],
   jobs: Partial<Record<SleeveCompanyName, unknown>>
-): Map<number, SleeveCompany> {
-  return assignByPosition(sleeveIndexes, companies.filter(company => jobs[company.name] !== undefined))
+): SleeveCompany[] {
+  return companies.filter(company => jobs[company.name] !== undefined)
 }
