@@ -10,15 +10,15 @@
 type Pair = [number, number]
 
 export function uniquePaths([boundX, boundY]: Pair): number {
-    function recurse(paths: Pair[]): Pair[] {
-        const newPaths: Pair[] = []
-        for(const [pathX, pathY] of paths) {
-            if(pathX < boundX-1) newPaths.push([pathX+1, pathY])
-            if(pathY < boundY-1) newPaths.push([pathX, pathY+1])
-            if(pathX == boundX && pathY == boundY) newPaths.push([pathX, pathY])
-        }
-        return newPaths.length == paths.length ? paths : recurse(newPaths)
+  function recurse(paths: Pair[]): Pair[] {
+    const newPaths: Pair[] = []
+    for (const [pathX, pathY] of paths) {
+      if (pathX < boundX-1) newPaths.push([pathX+1, pathY])
+      if (pathY < boundY-1) newPaths.push([pathX, pathY+1])
+      if (pathX == boundX && pathY == boundY) newPaths.push([pathX, pathY])
     }
+    return newPaths.length == paths.length ? paths : recurse(newPaths)
+  }
 
-    return recurse([[0,0]]).length
+  return recurse([[0,0]]).length
 }

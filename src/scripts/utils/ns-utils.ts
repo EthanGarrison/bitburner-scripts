@@ -6,67 +6,67 @@ import { home, simpleHackScript } from "scripts/utils/constants"
 
 // Hacky solution to not being able to import the typescript defs into the game
 export const EGCompanyName = [
-    "ECorp",
-    "MegaCorp",
-    "Bachman & Associates",
-    "Blade Industries",
-    "NWO",
-    "Clarke Incorporated",
-    "OmniTek Incorporated",
-    "Four Sigma",
-    "KuaiGong International",
-    "Fulcrum Technologies",
-    "Storm Technologies",
-    "DefComm",
-    "Helios Labs",
-    "VitaLife",
-    "Icarus Microsystems",
-    "Universal Energy",
-    "Galactic Cybersystems",
-    "AeroCorp",
-    "Omnia Cybersystems",
-    "Solaris Space Systems",
-    "DeltaOne",
-    "Global Pharmaceuticals",
-    "Nova Medical",
-    "Central Intelligence Agency",
-    "National Security Agency",
-    "Watchdog Security",
-    "LexoCorp",
-    "Rho Construction",
-    "Alpha Enterprises",
-    "Aevum Police Headquarters",
-    "SysCore Securities",
-    "CompuTek",
-    "NetLink Technologies",
-    "Carmichael Security",
-    "FoodNStuff",
-    "Joe's Guns",
-    "Omega Software",
-    "Noodle Bar",
+  "ECorp",
+  "MegaCorp",
+  "Bachman & Associates",
+  "Blade Industries",
+  "NWO",
+  "Clarke Incorporated",
+  "OmniTek Incorporated",
+  "Four Sigma",
+  "KuaiGong International",
+  "Fulcrum Technologies",
+  "Storm Technologies",
+  "DefComm",
+  "Helios Labs",
+  "VitaLife",
+  "Icarus Microsystems",
+  "Universal Energy",
+  "Galactic Cybersystems",
+  "AeroCorp",
+  "Omnia Cybersystems",
+  "Solaris Space Systems",
+  "DeltaOne",
+  "Global Pharmaceuticals",
+  "Nova Medical",
+  "Central Intelligence Agency",
+  "National Security Agency",
+  "Watchdog Security",
+  "LexoCorp",
+  "Rho Construction",
+  "Alpha Enterprises",
+  "Aevum Police Headquarters",
+  "SysCore Securities",
+  "CompuTek",
+  "NetLink Technologies",
+  "Carmichael Security",
+  "FoodNStuff",
+  "Joe's Guns",
+  "Omega Software",
+  "Noodle Bar",
 ]
 
 export interface ServerTree<T> {
-    node: T
-    leaves: () => Iterable<ServerTree<T>>
+  node: T
+  leaves: () => Iterable<ServerTree<T>>
 }
 
 interface ServerRank {
-    name: string
-    loopTime: number
-    hackMoney: number
-    rank: number
+  name: string
+  loopTime: number
+  hackMoney: number
+  rank: number
 }
 
 export interface HGWThreadCount {
-    hack: number,
-    grow: number,
-    weaken: number
+  hack: number,
+  grow: number,
+  weaken: number
 }
 
 export interface ServerThread {
-    server: string,
-    thread: number
+  server: string,
+  thread: number
 }
 
 // Found in the source here: https://github.com/bitburner-official/bitburner-src/blob/dev/src/Server/data/Constants.ts#L19
@@ -82,118 +82,118 @@ function weakenCount(growCount: number) { return ((HACK_SECURITY_DELTA + GROW_SE
  * Rank is weighted and filtered based on player skills, meaning that the rank will change overtime
  */
 function serverRank(ns: NS, server: string): ServerRank {
-    const hackFormulas = ns.formulas.hacking
+  const hackFormulas = ns.formulas.hacking
 
-    // Setting the hackDifficulty to the minimum, as the formulas depend on it
-    // By not doing this, servers that have been worked on previously are weighted favorably
-    const serverInfo = ns.getServer(server)
-    serverInfo.hackDifficulty = serverInfo.minDifficulty
-    serverInfo.moneyAvailable = serverInfo.moneyMax
+  // Setting the hackDifficulty to the minimum, as the formulas depend on it
+  // By not doing this, servers that have been worked on previously are weighted favorably
+  const serverInfo = ns.getServer(server)
+  serverInfo.hackDifficulty = serverInfo.minDifficulty
+  serverInfo.moneyAvailable = serverInfo.moneyMax
 
-    const playerInfo = ns.getPlayer()
-    if (!serverInfo.hasAdminRights || (serverInfo.requiredHackingSkill ?? Infinity) > playerInfo.skills.hacking)
-        return { "name": server, "hackMoney": 0, "loopTime": Infinity, "rank": 0 }
+  const playerInfo = ns.getPlayer()
+  if (!serverInfo.hasAdminRights || (serverInfo.requiredHackingSkill ?? Infinity) > playerInfo.skills.hacking)
+    return { "name": server, "hackMoney": 0, "loopTime": Infinity, "rank": 0 }
 
-    const hgwThreadCount = getHGWCount(ns, serverInfo, playerInfo)
-    // Assume a single hack
-    const hackTime = hackFormulas.hackTime(serverInfo, playerInfo)
+  const hgwThreadCount = getHGWCount(ns, serverInfo, playerInfo)
+  // Assume a single hack
+  const hackTime = hackFormulas.hackTime(serverInfo, playerInfo)
 
-    // Calc time until grow recovers
-    const minGrowTime = hackFormulas.growTime(serverInfo, playerInfo)
-    const totalGrowTime = minGrowTime * hgwThreadCount.grow
+  // Calc time until grow recovers
+  const minGrowTime = hackFormulas.growTime(serverInfo, playerInfo)
+  const totalGrowTime = minGrowTime * hgwThreadCount.grow
 
-    // Calc security cost
-    const weakenTime = hackFormulas.weakenTime(serverInfo, playerInfo)
-    const totalWeakenTime = weakenTime * weakenCount(hgwThreadCount.grow)
+  // Calc security cost
+  const weakenTime = hackFormulas.weakenTime(serverInfo, playerInfo)
+  const totalWeakenTime = weakenTime * weakenCount(hgwThreadCount.grow)
 
-    const hackPercent = hackFormulas.hackPercent(serverInfo, playerInfo)
-    const hackMoney = (serverInfo.moneyMax ?? 0) * hackPercent
-    const totalLoopTime = (hackTime + totalGrowTime + totalWeakenTime) / 1000
+  const hackPercent = hackFormulas.hackPercent(serverInfo, playerInfo)
+  const hackMoney = (serverInfo.moneyMax ?? 0) * hackPercent
+  const totalLoopTime = (hackTime + totalGrowTime + totalWeakenTime) / 1000
 
-    return { "name": server, "loopTime": totalLoopTime, hackMoney, "rank": hackMoney / totalLoopTime }
+  return { "name": server, "loopTime": totalLoopTime, hackMoney, "rank": hackMoney / totalLoopTime }
 }
 
 /**
  * Attempts to gain root access through brute-force attempts of each port script
  */
 export function getRootAccess(ns: NS, target: string) {
-    if (ns.hasRootAccess(target)) return true
-    const cracks = [ns.brutessh, ns.relaysmtp, ns.ftpcrack, ns.sqlinject, ns.httpworm, ns.nuke]
-    for (const fn of cracks) {
-        try { fn(target) }
-        catch { }
-    }
-    return ns.hasRootAccess(target)
+  if (ns.hasRootAccess(target)) return true
+  const cracks = [ns.brutessh, ns.relaysmtp, ns.ftpcrack, ns.sqlinject, ns.httpworm, ns.nuke]
+  for (const fn of cracks) {
+    try { fn(target) }
+    catch { }
+  }
+  return ns.hasRootAccess(target)
 }
 
 export function buildServerTree(ns: NS, root: string): ServerTree<string> {
-    function recurse(current: string, seen = new Set([root])) {
-        const genLeaves: (children: string[]) => Iterable<ServerTree<string>> = fn.compose(
-            iter.toArray,
-            iter.map((child: string) => recurse(child, seen)),
-            iter.filter((child: string) => {
-                const notSeen = !seen.has(child)
-                if (notSeen) seen.add(child)
-                return notSeen
-            })
-        )
-        let _leaves: Iterable<ServerTree<string>>
-        return {
-            "node": current,
-            leaves() {
-                if (!typeCheck.isDefined(_leaves)) _leaves = genLeaves(ns.scan(current))
-                return _leaves
-            }
-        }
+  function recurse(current: string, seen = new Set([root])) {
+    const genLeaves: (children: string[]) => Iterable<ServerTree<string>> = fn.compose(
+      iter.toArray,
+      iter.map((child: string) => recurse(child, seen)),
+      iter.filter((child: string) => {
+        const notSeen = !seen.has(child)
+        if (notSeen) seen.add(child)
+        return notSeen
+      })
+    )
+    let _leaves: Iterable<ServerTree<string>>
+    return {
+      "node": current,
+      leaves() {
+        if (!typeCheck.isDefined(_leaves)) _leaves = genLeaves(ns.scan(current))
+        return _leaves
+      }
     }
-    return recurse(root)
+  }
+  return recurse(root)
 }
 
 export function buildPath<T>(tree: ServerTree<T>, target: T): T[] {
-    const seen = new Set([tree.node])
-    function recurse(current: ServerTree<T>): T[] {
-        if (current.node == target) return [current.node]
-        else {
-            for (const child of current.leaves()) {
-                if (seen.has(child.node)) continue
-                seen.add(child.node)
-                if (child.node == target) return [child.node]
-                const possiblePath = recurse(child)
-                if (possiblePath.length > 0) return [child.node, ...possiblePath]
-            }
-            return []
-        }
+  const seen = new Set([tree.node])
+  function recurse(current: ServerTree<T>): T[] {
+    if (current.node == target) return [current.node]
+    else {
+      for (const child of current.leaves()) {
+        if (seen.has(child.node)) continue
+        seen.add(child.node)
+        if (child.node == target) return [child.node]
+        const possiblePath = recurse(child)
+        if (possiblePath.length > 0) return [child.node, ...possiblePath]
+      }
+      return []
     }
+  }
 
-    return recurse(tree)
+  return recurse(tree)
 }
 
 /**
  * Recursively scans every server in the tree, starting at the given root
  */
 export function* genDeepScan(ns: NS, root = home) {
-    const serverSet = new Set([root])
-    yield root
-    function* recurse(current: string): Generator<string, void, void> {
-        const found = ns.scan(current)
-        for (const server of found) {
-            if (serverSet.has(server)) continue;
+  const serverSet = new Set([root])
+  yield root
+  function* recurse(current: string): Generator<string, void, void> {
+    const found = ns.scan(current)
+    for (const server of found) {
+      if (serverSet.has(server)) continue;
 
-            serverSet.add(server)
-            yield server
-            yield* recurse(server)
-        }
+      serverSet.add(server)
+      yield server
+      yield* recurse(server)
     }
-    yield* recurse(root)
+  }
+  yield* recurse(root)
 }
 
 export function getProfitableServers(ns: NS): Iterable<ServerRank> {
-    return fn.compose(
-        iter.sort((l: ServerRank, r: ServerRank) => r.rank - l.rank),
-        iter.filter((sr: ServerRank) => sr.rank > 0),
-        iter.map((_: string) => serverRank(ns, _)),
-        iter.filter((server: string) => !(server == "home" || server == "darkweb"))
-    )(genDeepScan(ns, "home"))
+  return fn.compose(
+    iter.sort((l: ServerRank, r: ServerRank) => r.rank - l.rank),
+    iter.filter((sr: ServerRank) => sr.rank > 0),
+    iter.map((_: string) => serverRank(ns, _)),
+    iter.filter((server: string) => !(server == "home" || server == "darkweb"))
+  )(genDeepScan(ns, "home"))
 }
 
 /**
@@ -204,18 +204,18 @@ export function getProfitableServers(ns: NS): Iterable<ServerRank> {
  * @returns The thread count ratios for hack-grow-weaken
  */
 export function getHGWCount(ns: NS, server: Server, player: Player): HGWThreadCount {
-    const hackFormulas = ns.formulas.hacking
+  const hackFormulas = ns.formulas.hacking
 
-    // Setting the hackDifficulty to the minimum, as the formulas depend on it
-    // By not doing this, servers that have been worked on previously are weighted favorably
-    server.hackDifficulty = server.minDifficulty
+  // Setting the hackDifficulty to the minimum, as the formulas depend on it
+  // By not doing this, servers that have been worked on previously are weighted favorably
+  server.hackDifficulty = server.minDifficulty
 
-    // Calc time until grow recovers
-    const hackPercent = hackFormulas.hackPercent(server, player)
-    const growPercent = hackFormulas.growPercent(server, 1, player, 1)
-    const growCount = hackPercent / (growPercent - 1)
+  // Calc time until grow recovers
+  const hackPercent = hackFormulas.hackPercent(server, player)
+  const growPercent = hackFormulas.growPercent(server, 1, player, 1)
+  const growCount = hackPercent / (growPercent - 1)
 
-    return { hack: 1, grow: growCount, weaken: weakenCount(growCount) }
+  return { hack: 1, grow: growCount, weaken: weakenCount(growCount) }
 }
 
 /**
@@ -228,18 +228,18 @@ export function getHGWCount(ns: NS, server: Server, player: Player): HGWThreadCo
  * @returns 
  */
 export function getServerThreadsAvailable(ns: NS, killRunning = false, script = simpleHackScript, ...scriptArgs: (string | number | boolean)[]): (_: Iterable<string>) => Iterable<ServerThread> {
-    // If we are killing the script, then we don't care if it is running
-    const scriptRunningCheck = (server: string) => killRunning || !ns.isRunning(script, server, ...scriptArgs)
+  // If we are killing the script, then we don't care if it is running
+  const scriptRunningCheck = (server: string) => killRunning || !ns.isRunning(script, server, ...scriptArgs)
 
-    return fn.compose(
-        iter.filter<ServerThread>(_ => _.thread > 0), // Skip if not enough available threads
-        iter.map((server: string) => {
-            if (killRunning) ns.killall(server)
-            const serverMem = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
-            const thread = Math.max(Math.floor(serverMem / ns.getScriptRam(script, home)), 0)
-            return { server, thread }
-        }),
-        iter.filter(scriptRunningCheck),
-        iter.filter((server: string) => server != home && ns.hasRootAccess(server)),
-    )
+  return fn.compose(
+    iter.filter<ServerThread>(_ => _.thread > 0), // Skip if not enough available threads
+    iter.map((server: string) => {
+      if (killRunning) ns.killall(server)
+      const serverMem = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
+      const thread = Math.max(Math.floor(serverMem / ns.getScriptRam(script, home)), 0)
+      return { server, thread }
+    }),
+    iter.filter(scriptRunningCheck),
+    iter.filter((server: string) => server != home && ns.hasRootAccess(server)),
+  )
 }

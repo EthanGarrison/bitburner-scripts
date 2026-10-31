@@ -52,7 +52,7 @@ export function twoColorCheck([_, connections]: [number, number[][]]): number[] 
   }
 
   let first = vertices.find(v => typeof v != "undefined")
-  if(first) first.color = 0
+  if (first) first.color = 0
   // Kickstart the colors by assigning the first vertex with a color
 
   // The messy bits.
@@ -63,7 +63,7 @@ export function twoColorCheck([_, connections]: [number, number[][]]): number[] 
     const vertex = vertices[idx]
 
     // For the weird cases were they do not use a vertex
-    if(typeof vertex == "undefined") {
+    if (typeof vertex == "undefined") {
       vertices[idx] = { vertex: idx, color: 0, connections: [] }
       continue
     }
