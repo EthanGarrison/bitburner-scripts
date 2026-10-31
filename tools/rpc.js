@@ -1,10 +1,10 @@
-const http = require('node:http');
-const { controlSocketPath } = require('./lib/config');
+import { request as _request } from 'node:http';
+import { controlSocketPath } from './lib/config';
 
 /** Sends a Remote API call to the game through the running `npm run watch` server. */
 function rpc(method, params) {
   return new Promise((resolve, reject) => {
-    const request = http.request(
+    const request = _request(
       { socketPath: controlSocketPath, path: '/rpc', method: 'POST', headers: { 'Content-Type': 'application/json' } },
       (response) => {
         const chunks = [];
@@ -40,4 +40,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { rpc };
+export default { rpc };

@@ -1,9 +1,9 @@
-const path = require('node:path');
-const raw = require('../../bitburner.json');
+import { resolve } from 'node:path';
+import raw from '../../bitburner.json';
 
-const projectRoot = path.resolve(__dirname, '..', '..');
+const projectRoot = resolve(__dirname, '..', '..');
 
-module.exports = {
+export default {
   port: raw.port,
   controlSocketPath: path.resolve(projectRoot, raw.controlSocket),
   scriptsFolder: path.resolve(projectRoot, raw.scriptsFolder),

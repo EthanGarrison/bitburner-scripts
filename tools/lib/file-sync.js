@@ -1,5 +1,5 @@
-const fs = require('node:fs');
-const path = require('node:path');
+import { readdirSync, readFileSync, writeFileSync, existsSync, watch, statSync } from 'node:fs';
+import { sep, normalize, relative, join } from 'node:path';
 
 const homeServer = 'home';
 const debounceMs = 50;
@@ -11,19 +11,18 @@ function createFileSync({ connection, scriptsFolder, allowedFiletypes, allowDele
   const debounceTimers = new Map();
 
   const isAllowed = (relativePath) => allowedFiletypes.some((extension) => relativePath.endsWith(extension));
-  const toRemoteName = (relativePath) => '/' + relativePath.split(path.sep).join('/');
-  const toRelativePath = (remoteName) => path.normalize(remoteName.replace(/^\//, ''));
+  const toRemoteName = (relativePath) => '/' + relativePath.split(sep).join('/');
+  const toRelativePath = (remoteName) => normalize(remoteName.replace(/^\//, ''));
 
   function listLocalFiles() {
-    return fs
-      .readdirSync(scriptsFolder, { recursive: true, withFileTypes: true })
+    return readdirSync(scriptsFolder, { recursive: true, withFileTypes: true })
       .filter((entry) => entry.isFile())
-      .map((entry) => path.relative(scriptsFolder, path.join(entry.parentPath ?? entry.path, entry.name)))
+      .map((entry) => relative(scriptsFolder, join(entry.parentPath ?? entry.path, entry.name)))
       .filter(isAllowed);
   }
 
   async function pushFile(relativePath) {
-    const content = fs.readFileSync(path.join(scriptsFolder, relativePath), 'utf8');
+    const content = readFileSync(join(scriptsFolder, relativePath), 'utf8');
     await connection.call('pushFile', { server: homeServer, filename: toRemoteName(relativePath), content });
     console.log(`${toRemoteName(relativePath)} changed`);
   }
@@ -47,7 +46,7 @@ function createFileSync({ connection, scriptsFolder, allowedFiletypes, allowDele
   async function updateDefinitionFile() {
     if (!definitionFile) return;
     try {
-      fs.writeFileSync(definitionFile, await connection.call('getDefinitionFile'));
+      writeFileSync(definitionFile, await connection.call('getDefinitionFile'));
       console.log('Definition file updated');
     } catch (error) {
       console.error(`Failed to update definition file: ${error.message}`);
@@ -68,7 +67,7 @@ function createFileSync({ connection, scriptsFolder, allowedFiletypes, allowDele
   }
 
   async function syncChange(relativePath) {
-    const exists = fs.existsSync(path.join(scriptsFolder, relativePath));
+    const exists = existsSync(join(scriptsFolder, relativePath));
     if (!exists && !allowDeletingFiles) return;
     if (!connection.isConnected()) {
       pendingPaths.add(relativePath);
@@ -100,26 +99,26 @@ function createFileSync({ connection, scriptsFolder, allowedFiletypes, allowDele
     if (watchers.has(directory)) return;
     watchers.set(
       directory,
-      fs.watch(directory, (_eventType, filename) => {
+      watch(directory, (_eventType, filename) => {
         if (!filename) return;
-        const fullPath = path.join(directory, filename);
-        if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+        const fullPath = join(directory, filename);
+        if (existsSync(fullPath) && statSync(fullPath).isDirectory()) {
           watchDirectory(fullPath);
-          for (const file of listLocalFiles()) if (file.startsWith(path.relative(scriptsFolder, fullPath) + path.sep)) scheduleSync(file);
+          for (const file of listLocalFiles()) if (file.startsWith(relative(scriptsFolder, fullPath) + sep)) scheduleSync(file);
           return;
         }
-        const relativePath = path.relative(scriptsFolder, fullPath);
+        const relativePath = relative(scriptsFolder, fullPath);
         if (isAllowed(relativePath)) scheduleSync(relativePath);
       }),
     );
   }
 
   watchDirectory(scriptsFolder);
-  for (const entry of fs.readdirSync(scriptsFolder, { recursive: true, withFileTypes: true })) {
-    if (entry.isDirectory()) watchDirectory(path.join(entry.parentPath ?? entry.path, entry.name));
+  for (const entry of readdirSync(scriptsFolder, { recursive: true, withFileTypes: true })) {
+    if (entry.isDirectory()) watchDirectory(join(entry.parentPath ?? entry.path, entry.name));
   }
 
   return { syncOnConnect, close: () => watchers.forEach((watcher) => watcher.close()) };
 }
 
-module.exports = { createFileSync };
+export default { createFileSync };

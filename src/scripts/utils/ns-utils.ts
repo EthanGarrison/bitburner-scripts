@@ -127,7 +127,9 @@ export function getRootAccess(ns: NS, target: string) {
 }
 
 export function buildServerTree(ns: NS, root: string): ServerTree<string> {
+
   function recurse(current: string, seen = new Set([root])) {
+
     const genLeaves: (children: string[]) => Iterable<ServerTree<string>> = fn.compose(
       iter.toArray,
       iter.map((child: string) => recurse(child, seen)),
@@ -137,6 +139,7 @@ export function buildServerTree(ns: NS, root: string): ServerTree<string> {
         return notSeen
       })
     )
+
     let _leaves: Iterable<ServerTree<string>>
     return {
       "node": current,
@@ -145,7 +148,9 @@ export function buildServerTree(ns: NS, root: string): ServerTree<string> {
         return _leaves
       }
     }
+
   }
+
   return recurse(root)
 }
 

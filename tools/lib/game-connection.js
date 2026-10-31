@@ -1,4 +1,4 @@
-const { WebSocketServer } = require('ws');
+import { WebSocketServer } from 'ws';
 
 const requestTimeoutMs = 30_000;
 
@@ -76,4 +76,4 @@ function createGameConnection({ port, onConnect }) {
   };
 }
 
-module.exports = { createGameConnection };
+export default { createGameConnection };

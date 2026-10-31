@@ -1,18 +1,18 @@
-const fs = require('node:fs');
-const http = require('node:http');
-const config = require('./lib/config');
-const { createGameConnection } = require('./lib/game-connection');
-const { createFileSync } = require('./lib/file-sync');
+import { rmSync } from 'node:fs';
+import { createServer } from 'node:http';
+import config, { port as _port, controlSocketPath } from './lib/config';
+import { createGameConnection } from './lib/game-connection';
+import { createFileSync } from './lib/file-sync';
 
 let fileSync;
 const connection = createGameConnection({
-  port: config.port,
+  port: _port,
   onConnect: () => fileSync?.syncOnConnect(),
 });
 fileSync = createFileSync({ connection, ...config });
 
 // A Unix socket (rather than a TCP port) keeps the control channel unreachable from browser pages.
-const controlServer = http.createServer((request, response) => {
+const controlServer = createServer((request, response) => {
   const chunks = [];
   request.on('data', (chunk) => chunks.push(chunk));
   request.on('end', async () => {
@@ -44,20 +44,20 @@ function shutdown() {
 }
 
 connection.server.on('error', (error) => {
-  console.error(error.code === 'EADDRINUSE' ? `Port ${config.port} is in use; is another server running?` : error.message);
+  console.error(error.code === 'EADDRINUSE' ? `Port ${_port} is in use; is another server running?` : error.message);
   process.exit(1);
 });
 
 // Linux caps Unix socket paths at 107 bytes and silently truncates longer ones.
-if (Buffer.byteLength(config.controlSocketPath) > 107) {
-  console.error(`Control socket path is too long (${config.controlSocketPath}); set a shorter "controlSocket" in bitburner.json`);
+if (Buffer.byteLength(controlSocketPath) > 107) {
+  console.error(`Control socket path is too long (${controlSocketPath}); set a shorter "controlSocket" in bitburner.json`);
   process.exit(1);
 }
 
 // A leftover socket from a crashed run would block listen; we own this path.
-fs.rmSync(config.controlSocketPath, { force: true });
-controlServer.listen(config.controlSocketPath, () => {
-  console.log(`Server ready: game on ws://localhost:${config.port}, control on ${config.controlSocketPath}`);
+rmSync(controlSocketPath, { force: true });
+controlServer.listen(controlSocketPath, () => {
+  console.log(`Server ready: game on ws://localhost:${_port}, control on ${controlSocketPath}`);
 });
 
 process.on('SIGINT', shutdown);

@@ -1,9 +1,9 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const zlib = require('node:zlib');
-const { rpc } = require('./rpc');
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { resolve, join, relative } from 'node:path';
+import { gunzipSync } from 'node:zlib';
+import { rpc } from './rpc';
 
-const outputDirectory = path.resolve(__dirname, '..', '.snapshot');
+const outputDirectory = resolve(__dirname, '..', '.snapshot');
 
 /** The game stores many sub-objects as JSON strings inside the save JSON; expand them so the file is readable. */
 function expandNestedJson(value) {
@@ -26,7 +26,7 @@ function decodeSave({ save, binary }) {
   const bytes = Buffer.from(save, binary ? 'latin1' : 'base64');
   const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
   try {
-    return expandNestedJson(JSON.parse((isGzip ? zlib.gunzipSync(bytes) : bytes).toString('utf8')));
+    return expandNestedJson(JSON.parse((isGzip ? gunzipSync(bytes) : bytes).toString('utf8')));
   } catch (error) {
     console.warn(`Could not decode save (binary=${binary}): ${error.message}; keeping raw data only`);
     return undefined;
@@ -34,13 +34,13 @@ function decodeSave({ save, binary }) {
 }
 
 function write(name, contents) {
-  const file = path.join(outputDirectory, name);
-  fs.writeFileSync(file, JSON.stringify(contents, null, 2));
-  console.log(`wrote ${path.relative(process.cwd(), file)}`);
+  const file = join(outputDirectory, name);
+  writeFileSync(file, JSON.stringify(contents, null, 2));
+  console.log(`wrote ${relative(process.cwd(), file)}`);
 }
 
 async function main() {
-  fs.mkdirSync(outputDirectory, { recursive: true });
+  mkdirSync(outputDirectory, { recursive: true });
   write('servers.json', await rpc('getAllServers'));
 
   const saveFile = await rpc('getSaveFile');
