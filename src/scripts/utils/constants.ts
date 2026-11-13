@@ -44,14 +44,19 @@ export const sleeveFactionWorkTypePreference = [
 // Training in Bladeburner is used only to raise stats below target, never as idle work
 export const sleeveBladeburnerTrainingAction = "Training"
 
-// Placeholder list, ordered by priority: the first company goes to the first sleeve, and so on
-export const sleeveCompanies = [
-  { name: "MegaCorp" },
-  { name: "Blade Industries" },
-  { name: "ECorp" },
-  { name: "Bachman & Associates" },
-  { name: "NWO" }
-] as const satisfies readonly { name: SleeveCompanyName }[]
+// Companies that unlock a faction. The faction shares the company's name except for Fulcrum; other companies grant none
+export const companyFactions = [
+  { company: "ECorp", faction: "ECorp" },
+  { company: "MegaCorp", faction: "MegaCorp" },
+  { company: "Bachman & Associates", faction: "Bachman & Associates" },
+  { company: "Blade Industries", faction: "Blade Industries" },
+  { company: "NWO", faction: "NWO" },
+  { company: "Clarke Incorporated", faction: "Clarke Incorporated" },
+  { company: "OmniTek Incorporated", faction: "OmniTek Incorporated" },
+  { company: "Four Sigma", faction: "Four Sigma" },
+  { company: "KuaiGong International", faction: "KuaiGong International" },
+  { company: "Fulcrum Technologies", faction: "Fulcrum Secret Technologies" }
+] as const satisfies readonly { company: SleeveCompanyName, faction: SleeveFactionName }[]
 
 // How long a refused faction/company stays excluded for a sleeve before it is retried
 export const sleeveRejectionCooldownMs = 60_000

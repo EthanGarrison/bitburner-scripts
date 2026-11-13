@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { getSleeveCompanies, heldCompanies } from "scripts/sleeve/companies"
+import { getSleeveCompanies } from "scripts/sleeve/company-ranking"
 import { decideTask, isFullyOnline, SleeveConfig, SleeveContext, SleeveTask } from "scripts/sleeve/decide"
 import {
   activeRejections,
@@ -87,15 +87,10 @@ export async function main(ns: NS) {
   let passesSinceOnline = 0
 
   do {
-    const jobs = ns.getPlayer().jobs
     const sleeveStatuses = new Map(sleeveIndexes.map(index => [index, ns.sleeve.getSleeve(index)] as const))
     const pastTraining = sleeveIndexes.filter(index => isFullyOnline(sleeveStatuses.get(index)!, config))
     const allOnline = pastTraining.length == sleeveIndexes.length
 
-    const listedCompanies = getSleeveCompanies(ns)
-    for (const company of listedCompanies) {
-      if (jobs[company.name] === undefined) printOnce(`No job at ${company.name}, skipping company work`)
-    }
     const allIndexes = Array.from({ length: sleeveCount }, (_, index) => index)
     const currentWork = new Map(allIndexes.map(index => [index, currentWorkOf(ns.sleeve.getTask(index))] as const))
     const heldElsewhere = allIndexes.filter(index => !pastTraining.includes(index)).map(index => currentWork.get(index)!)
@@ -104,7 +99,7 @@ export async function main(ns: NS) {
     const plan = pastTraining.length > 0
       ? planAssignments(
         pastTraining,
-        heldCompanies(listedCompanies, jobs),
+        getSleeveCompanies(ns),
         rankFactions(gatherFactionInputs(ns)),
         rankJobs(gatherJobInputs(ns)),
         currentWork,

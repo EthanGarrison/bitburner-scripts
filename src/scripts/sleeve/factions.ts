@@ -144,7 +144,7 @@ export function planAssignments(
 
 const reportedUnavailable = new Set<string>()
 
-function reportSingularityUnavailable(ns: NS, what: string) {
+export function reportSingularityUnavailable(ns: NS, what: string) {
   if (reportedUnavailable.has(what)) return
   reportedUnavailable.add(what)
   ns.print(`Singularity unavailable, skipping ${what}`)
