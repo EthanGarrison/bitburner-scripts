@@ -1,15 +1,3 @@
-import { NS } from "@ns"
-import { sleeveCompanies, SleeveCompanyName } from "scripts/utils/constants"
-import { SleeveCompany } from "scripts/sleeve/decide"
-
-/**
- * Single company-selection seam. Currently the constant list; a future version
- * can choose companies from ns state (reputation, available jobs, factions).
- */
-export function getSleeveCompanies(_ns: NS): readonly SleeveCompany[] {
-  return sleeveCompanies
-}
-
 /**
  * Gives each sleeve a distinct candidate. Sleeves keep the candidate they already hold when it is still
  * allowed, so changes in candidate order never swap sleeves; the remaining candidates, in order, go to the
@@ -38,12 +26,4 @@ export function assignSticky<T extends { name: string }>(
     if (next) result.set(index, next)
   }
   return result
-}
-
-/** The listed companies the player holds a job at */
-export function heldCompanies(
-  companies: readonly SleeveCompany[],
-  jobs: Partial<Record<SleeveCompanyName, unknown>>
-): SleeveCompany[] {
-  return companies.filter(company => jobs[company.name] !== undefined)
 }
