@@ -41,6 +41,30 @@ export const sleeveFactionWorkTypePreference = [
   "security"
 ] as const satisfies readonly SleeveFactionWorkType[]
 
+export type AugmentationStats = ReturnType<NS["singularity"]["getAugmentationStats"]>
+
+// Multipliers that make a sleeve augmentation worth buying. Crime multipliers are left out: sleeves do no crime here
+export const sleeveAugmentationValuedMultipliers = [
+  "hacking",
+  "strength",
+  "defense",
+  "dexterity",
+  "agility",
+  "charisma",
+  "hacking_exp",
+  "strength_exp",
+  "defense_exp",
+  "dexterity_exp",
+  "agility_exp",
+  "charisma_exp",
+  "faction_rep",
+  "company_rep",
+  "work_money"
+] as const satisfies readonly (keyof AugmentationStats)[]
+
+// A sleeve augmentation is bought only when it costs at most this fraction of the player's money
+export const defaultSleeveAugmentationBudget = 0.2
+
 // Training in Bladeburner is used only to raise stats below target, never as idle work
 export const sleeveBladeburnerTrainingAction = "Training"
 
