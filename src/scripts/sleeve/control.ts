@@ -1,4 +1,5 @@
 import { NS } from "@ns"
+import { buyAugmentations, ValuedMultipliers } from "scripts/sleeve/augments"
 import { getSleeveCompanies } from "scripts/sleeve/company-ranking"
 import { decideTask, isFullyOnline, SleeveConfig, SleeveContext, SleeveTask } from "scripts/sleeve/decide"
 import {
@@ -12,6 +13,7 @@ import {
   releasersFirst
 } from "scripts/sleeve/factions"
 import {
+  defaultSleeveAugmentationBudget,
   defaultSleeveStatTarget,
   SleeveCityName,
   sleeveBladeburnerTrainingAction,
@@ -30,9 +32,10 @@ export async function main(ns: NS) {
   ns.disableLog("sleeve.getTask")
   ns.disableLog("sleeve.getNumSleeves")
 
-  let { target, "sync-target": syncTarget, sleeves, watch } = ns.flags([
+  let { target, "sync-target": syncTarget, "augment-budget": augmentBudget, sleeves, watch } = ns.flags([
     ["target", defaultSleeveStatTarget],
     ["sync-target", 100],
+    ["augment-budget", defaultSleeveAugmentationBudget],
     ["sleeves", ""],
     ["watch", false]
   ])
@@ -44,6 +47,11 @@ export async function main(ns: NS) {
 
   if (typeof syncTarget != "number" || syncTarget < 0 || syncTarget > 100) {
     ns.tprint(`--sync-target '${syncTarget}' must be a number between 0 and 100`)
+    return
+  }
+
+  if (typeof augmentBudget != "number" || augmentBudget < 0 || augmentBudget > 1) {
+    ns.tprint(`--augment-budget '${augmentBudget}' must be a number between 0 and 1 (0 disables augmentation purchases)`)
     return
   }
 
@@ -64,6 +72,7 @@ export async function main(ns: NS) {
   const rejected = new Map<number, Map<string, number>>()
   const lastPrinted = new Map<string, number>()
   const finalStatus = new Map<number, string>()
+  const augmentationStats = new Map<string, ValuedMultipliers>()
 
   const announce = (message: string) => {
     if (announced.has(message)) return
@@ -87,6 +96,13 @@ export async function main(ns: NS) {
   let passesSinceOnline = 0
 
   do {
+    if (augmentBudget > 0) {
+      for (const index of sleeveIndexes) {
+        for (const name of buyAugmentations(ns, index, augmentBudget, augmentationStats, printThrottled)) {
+          announce(`Sleeve ${index}: bought ${name}`)
+        }
+      }
+    }
     const sleeveStatuses = new Map(sleeveIndexes.map(index => [index, ns.sleeve.getSleeve(index)] as const))
     const pastTraining = sleeveIndexes.filter(index => isFullyOnline(sleeveStatuses.get(index)!, config))
     const allOnline = pastTraining.length == sleeveIndexes.length
