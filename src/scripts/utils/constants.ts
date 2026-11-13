@@ -34,10 +34,10 @@ export type SleeveCompanyName = Parameters<NS["sleeve"]["setToCompanyWork"]>[1]
 export type SleeveFactionName = Parameters<NS["sleeve"]["setToFactionWork"]>[1]
 export type SleeveFactionWorkType = Parameters<NS["sleeve"]["setToFactionWork"]>[2]
 
-// Most reputation-efficient for sleeves first
+// Field work trains every stat, and part of a sleeve's exp flows back to the player, so it comes before hacking
 export const sleeveFactionWorkTypePreference = [
-  "hacking",
   "field",
+  "hacking",
   "security"
 ] as const satisfies readonly SleeveFactionWorkType[]
 
