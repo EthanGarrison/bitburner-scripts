@@ -76,4 +76,4 @@ function createGameConnection({ port, onConnect }) {
   };
 }
 
-export default { createGameConnection };
+export { createGameConnection };

@@ -1,15 +1,19 @@
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import raw from '../../bitburner.json';
 
-const projectRoot = resolve(__dirname, '..', '..');
+const projectRoot = resolve(import.meta.dirname, '..', '..');
+const raw = JSON.parse(readFileSync(resolve(projectRoot, 'bitburner.json'), 'utf8'));
 
-export default {
+const config = {
   port: raw.port,
-  controlSocketPath: path.resolve(projectRoot, raw.controlSocket),
-  scriptsFolder: path.resolve(projectRoot, raw.scriptsFolder),
+  controlSocketPath: resolve(projectRoot, raw.controlSocket),
+  scriptsFolder: resolve(projectRoot, raw.scriptsFolder),
   allowedFiletypes: raw.allowedFiletypes,
   allowDeletingFiles: raw.allowDeletingFiles,
   pushAllOnConnection: raw.pushAllOnConnection,
-  definitionFile: raw.definitionFile ? path.resolve(projectRoot, raw.definitionFile) : undefined,
+  definitionFile: raw.definitionFile ? resolve(projectRoot, raw.definitionFile) : undefined,
   projectRoot,
 };
+
+export const { port, controlSocketPath } = config;
+export default config;

@@ -1,8 +1,8 @@
 import { rmSync } from 'node:fs';
 import { createServer } from 'node:http';
-import config, { port as _port, controlSocketPath } from './lib/config';
-import { createGameConnection } from './lib/game-connection';
-import { createFileSync } from './lib/file-sync';
+import config, { port as _port, controlSocketPath } from './lib/config.js';
+import { createGameConnection } from './lib/game-connection.js';
+import { createFileSync } from './lib/file-sync.js';
 
 let fileSync;
 const connection = createGameConnection({
