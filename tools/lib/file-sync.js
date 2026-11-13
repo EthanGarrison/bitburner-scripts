@@ -121,4 +121,4 @@ function createFileSync({ connection, scriptsFolder, allowedFiletypes, allowDele
   return { syncOnConnect, close: () => watchers.forEach((watcher) => watcher.close()) };
 }
 
-export default { createFileSync };
+export { createFileSync };

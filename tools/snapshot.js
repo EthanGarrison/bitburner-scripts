@@ -1,9 +1,9 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { rpc } from './rpc';
+import { rpc } from './rpc.js';
 
-const outputDirectory = resolve(__dirname, '..', '.snapshot');
+const outputDirectory = resolve(import.meta.dirname, '..', '.snapshot');
 
 /** The game stores many sub-objects as JSON strings inside the save JSON; expand them so the file is readable. */
 function expandNestedJson(value) {

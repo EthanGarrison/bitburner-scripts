@@ -1,5 +1,5 @@
 import { request as _request } from 'node:http';
-import { controlSocketPath } from './lib/config';
+import { controlSocketPath } from './lib/config.js';
 
 /** Sends a Remote API call to the game through the running `npm run watch` server. */
 function rpc(method, params) {
@@ -38,6 +38,6 @@ async function main() {
   }
 }
 
-if (require.main === module) main();
+if (process.argv[1] === import.meta.filename) main();
 
-export default { rpc };
+export { rpc };
